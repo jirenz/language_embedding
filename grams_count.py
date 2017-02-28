@@ -26,8 +26,8 @@ parser.add_argument('-n', '--ngrams', default=3, type=int, help='store grams up 
 
 # Macros and Constants
 args = parser.parse_args()
+print(args)
 random.seed(args.seed)
-outputdir = args.outputpath
 
 # Begin Extract List of files
 files = [f for f in listdir(args.inputpath) if isfile(join(args.inputpath, f))]
@@ -83,7 +83,7 @@ for file_name in files:
 	#dump the gram info
 	
 	# testing file non-existing. Don't want to break things
-	with open(outputdir + file_name + ".grams", "w") as F:
+	with open(args.outputpath + file_name + ".tgrams", "w") as F:
 		F.write(json.dumps(dic))
 
 	print "Finish Processing File " + file_name
