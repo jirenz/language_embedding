@@ -22,10 +22,9 @@ random.seed(args.seed)
 data = {}
 counter = 0
 
-def add_char_gram(Dict, gram, count, threashold, debug = False):
-	if len(gram) > 1:
+def add_char_gram(Dict, text, count, threashold, debug = False):
+	if len(text.split(' ')) > 1:
 		return
-	text = gram[0]
 	text_length = len(text)
 	for gram_length in xrange(2, threashold):
 		for i in range(text_length + 1 - gram_length):
@@ -50,8 +49,11 @@ with open(args.outputpath, "w") as output_file:
 		print "Processing file:", file_path
 		with open(file_path, "r") as F:
 			result = json.load(F)
-			for k,v in tqdm(result.iteritems()):
+			pbar = tqdm(total=len(result))
+			for k,v in result.iteritems():
 				add_char_gram(data, k, v, args.threashold)
+				pbar.update(1)
+			pbar.close()
 		counter += 1
 		print "Processed ", counter, " files: ", len(data), "entries found"
 	output_file.write(json.dumps(data))
