@@ -11,15 +11,16 @@ import json
 from os import listdir
 from os.path import isfile, join
 import random
-
 import argparse
+from helper import remove_nonascii
+from helper import filter_with_alphabet
 
 parser = argparse.ArgumentParser(description='For given wikipedia dump files, \
 	generate dump of article n-gram statistics')
 parser.add_argument('inputpath', type=str, help='input directory that contains all dump files')
 parser.add_argument('-s', '--seed', default=1234, type=int, help='random seed')
 parser.add_argument('-o', '--outputpath', default='./', type=str, help='output path')
-parser.add_argument('-a', '--alphabets', default='abcdefghijklmnopqrstuvwxyz ',
+parser.add_argument('-a', '--alphabet', default='abcdefghijklmnopqrstuvwxyz ',
 	 type=str, help='supported alphabet')
 parser.add_argument('-n', '--ngrams', default=3, type=int, help='store grams up to n')
 # parser.add_argument('-c', '--numFiles', type=int, help='number of files to process')
@@ -45,10 +46,6 @@ def add_to_dict(Dict, text, gram_length, debug = False):
 			Dict[gram] += 1
 		except KeyError:
 			Dict[gram] = 1
-
-# remove non-ascii
-def remove_nonascii(text):
-	return str(''.join([i if ord(i) < 128 else "" for i in text]))
 	
 Counter = 0 # Number of articles processed
 file_count = 0
@@ -58,9 +55,9 @@ for file_name in files:
 	file_path = args.inputpath + "/" + file_name
 	print "Processing file:", file_path
 	with open(file_path, "r") as F:
-	text = []
-	dic = {}
-	# All articles begin with '<doc' and end with '</doc>'
+		text = []
+		dic = {}
+		# All articles begin with '<doc' and end with '</doc>'
 		for line in F:
 			if line.startswith("<doc"):
 				continue
@@ -77,13 +74,13 @@ for file_name in files:
 				continue	
 			# cast to unicode string, to lower case, remove non-alphabet characters before processing
 			line = remove_nonascii(line).lower()
-			text.extend(''.join(c for c in line if c in args.alphabets).split()) 
+			text.extend(filter_with_alphabet(line, args.alphabet).split()) 
 
 	#dump the gram info
 	
 	# testing file non-existing. Don't want to break things
-	with open(args.outputpath + file_name + ".tgrams", "w") as F:
-		F.write(json.dumps(dic))
+	#with open(args.outputpath + file_name + ".tgrams", "w") as F:
+	#	F.write(json.dumps(dic))
 
 	print "Finish Processing File " + file_name
 	file_count += 1

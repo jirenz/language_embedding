@@ -4,7 +4,7 @@ CS224N final project for word embedding
 check.py:
 
 
-dataloader.py:
+dataloader.py: // current version combined with the helper (and the file removed), can be used for data-training later
 
 
 distribution_stats.py:
@@ -14,7 +14,7 @@ get_test_data.py:
 
 
 grams_count.py:
-
+*** In line 56, a wrong indent fixed ***
 
 grams_reduce.py:
 

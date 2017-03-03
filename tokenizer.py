@@ -9,38 +9,15 @@ import random
 import json
 import re
 import numpy as np
-from dataloader import load_data_from_json
+from helper import load_data_from_json
+from helper import remove_nonascii
+from helper import tokenize
+from helper import get_gram_label
 
-gram_length = 3
-token_weight = [0, 1, 10, 13, 16, 19, 22];
-
-def remove_nonascii(text):
-	return str(''.join([i if ord(i) < 128 else "" for i in text]))
-	
-def tokenize(Dict, sentence):
-	# core function that will return the parsed sentence as a list of grams
-	text = sentence.split(" ")
-	result = []
-	N = len(text)
-	# randomized algorithm
-	it = 0
-	while (it < N):
-		mass = np.zeros(gram_length)
-		for i in range(1, gram_length + 1):
-			if (it + i <= N):
-				mass[i - 1] = Dict.get(" ".join(text[it:it + i]), 1) * token_weight[i] * 1.0
-		mass /= sum(mass)
-		tmp_len = np.random.choice(gram_length, p = mass) + 1# gram length for this time
-		result.append(" ".join(text[it:it + tmp_len]))
-		it += tmp_len
-	return result
-	
-def get_gram_label(Dict, sentence):
-	# given readable sentence, return labelled version
-	result = []
-	for gram in sentence:
-		result.append(Dict.get(gram, -1))
-	return result
+from utils import default_gram_length
+from utils import default_token_weight
+gram_length = default_gram_length
+token_weight = default_token_weight
 	
 parser = argparse.ArgumentParser(description='Tokenize the given article using given gram-set')
 parser.add_argument('inputpath', type=str, help='input directory that contains all articles')
@@ -105,7 +82,7 @@ for article_file in articles:
 	tokenized_sentences = {} # it's a dictionary with {index:tokenized_sentence} 
 	tokenized_labels = {} 
 	for i in range(len(sentences)):
-		tmp = tokenize(Dict, sentences[i])
+		tmp = tokenize(Dict, sentences[i], gram_length, token_weight)
 		tokenized_sentences[i] = tmp
 		tokenized_labels[i] = get_gram_label(Dict_gram_to_label, tmp)
 	with open(join(outputpath, article_file + ".readable"), "w") as F:
