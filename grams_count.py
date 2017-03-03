@@ -61,23 +61,23 @@ for file_name in files:
 	text = []
 	dic = {}
 	# All articles begin with '<doc' and end with '</doc>'
-		for line in F:
-			if line.startswith("<doc"):
-				continue
-			if line.startswith("</doc>"):
-				# some paragraph ends
-				Counter += 1
-				if Counter % 100 == 0:
-					print "Going to process article:", Counter
-				# print "Going to process article:", Counter, "; this article has", len(text), "words."
-				for gram_length in range(1, args.ngrams + 1): # also need single-word appearance
-					add_to_dict(dic, text, gram_length)
-				del text[:] # **
-				# print "Finished processing article:", Counter
-				continue	
-			# cast to unicode string, to lower case, remove non-alphabet characters before processing
-			line = remove_nonascii(line).lower()
-			text.extend(''.join(c for c in line if c in args.alphabets).split()) 
+	for line in F:
+		if line.startswith("<doc"):
+			continue
+		if line.startswith("</doc>"):
+			# some paragraph ends
+			Counter += 1
+			if Counter % 100 == 0:
+				print "Going to process article:", Counter
+			# print "Going to process article:", Counter, "; this article has", len(text), "words."
+			for gram_length in range(1, args.ngrams + 1): # also need single-word appearance
+				add_to_dict(dic, text, gram_length)
+			del text[:] # **
+			# print "Finished processing article:", Counter
+			continue	
+		# cast to unicode string, to lower case, remove non-alphabet characters before processing
+		line = remove_nonascii(line).lower()
+		text.extend(''.join(c for c in line if c in args.alphabets).split()) 
 
 	#dump the gram info
 	

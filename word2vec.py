@@ -1,9 +1,10 @@
 import tensorflow as tf
 import numpy as np
 import logging
-from model_ref import model
-from dataloader import load_data
+from model_ref import Model
+# from dataloader import load_data
 from tqdm import tqdm
+import time
 import pickle
 
 class Config:
@@ -14,11 +15,11 @@ class Config:
 	instantiation.
 	"""
 
-	dim_V = 123456 # vocabulary size
-	dim_H = 300 # embedding size
+	dim_V = 4 # vocabulary size
+	dim_H = 2 # embedding size
 	window_size = 6
 	n_epochs = 10
-	batch_size = 50
+	batch_size = 5
 	lr = 0.001
 	n_epochs = 10
 
@@ -37,12 +38,13 @@ class Config:
 	# 
 
 class Word2VecModel(Model):
-	def __init__(config):
+	def __init__(self, config):
+		self.config = config
+		self.logger = logging.getLogger('word2vec')
 		self.add_placeholders()
 		self.add_prediction_op()
 		self.add_loss_op()
 		self.add_training_op()
-		self.config = config
 
 	def add_placeholders(self):
 		"""Adds placeholder variables to tensorflow computational graph.
@@ -55,8 +57,8 @@ class Word2VecModel(Model):
 		See for more information:
 		https://www.tensorflow.org/versions/r0.7/api_docs/python/io_ops.html#placeholders
 		"""
-		self.inputs = tf.placeholder("float32", [None, self.config.dim_V])
-		self.labels = tf.placeholder("float32", [None, self.config.dim_V])
+		self.inputs = tf.placeholder("float32", [None, self.config.dim_V], name="inputs")
+		self.labels = tf.placeholder("float32", [None, self.config.dim_V], name="labels")
 		return
 
 	def create_feed_dict(self, inputs_batch, labels_batch=None):
@@ -78,12 +80,11 @@ class Word2VecModel(Model):
 		Returns:
 			feed_dict: The feed dictionary mapping from placeholders to values.
 		"""
-		feed_dict = {
-			self.inputs = inputs_batch
-		}
-		if labels_batch:
-			feed_dict[self.lables] = labels_batch
-		return
+		feed_dict = {}
+		feed_dict[self.inputs] = inputs_batch
+		if labels_batch is not None:
+			feed_dict[self.labels] = labels_batch
+		return feed_dict
 
 	def add_prediction_op(self):
 		"""Implements the core of the model that transforms a batch of input data into predictions.
@@ -91,9 +92,9 @@ class Word2VecModel(Model):
 		Returns:
 			pred: A tensor of shape (batch_size, window_size, dim_V)
 		"""
-		self.embedding_in = tf.Variable(tf.zeros([self.config.dim_V, self.config.dim_H]), name="vector_in")
-		self.embedding_out = tf.Variable(tf.zeros([self.config.dim_V, self.config.dim_H]), name="vector_out")
-		self.pred = tf.matmul(self.embedding_out, tf.matmul(self.inputs, self.embedding_in))
+		self.embedding_in = tf.Variable(tf.random_normal([self.config.dim_V, self.config.dim_H], stddev=0.1), name="vector_in")
+		self.embedding_out = tf.Variable(tf.random_normal([self.config.dim_H, self.config.dim_V],  stddev=0.1), name="vector_out")
+		self.pred = tf.matmul(tf.matmul(self.inputs, self.embedding_in, name="inputs_embeddding_in"), self.embedding_out, name="embedding_out")
 		return self.pred
 
 	def add_loss_op(self):
@@ -107,7 +108,7 @@ class Word2VecModel(Model):
 		self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=self.labels, logits=self.pred))
 		return self.loss
 
-	def add_training_op(self, loss):
+	def add_training_op(self):
 		"""Sets up the training Ops.
 
 		Creates an optimizer and applies the gradients to all trainable variables.
@@ -124,7 +125,7 @@ class Word2VecModel(Model):
 			train_op: The Op for training.
 		"""
 		opt = tf.train.AdamOptimizer(learning_rate=self.config.lr)
-		self.train_op = opt.minimize(loss)
+		self.train_op = opt.minimize(self.loss)
 		return self.train_op
 
 	def train_on_batch(self, sess, inputs_batch, labels_batch):
@@ -135,25 +136,38 @@ class Word2VecModel(Model):
 		_, loss = sess.run([self.train_op, self.loss], feed_dict=feed)
 		return loss
 
-	def fit(session, saver, train, dev):
-		for epoch in self.config.n_epochs:
-			logger.info("epoch: %d", epoch)
+	def fit(self, session, saver, train, dev):
+		for epoch in xrange(self.config.n_epochs):
+			self.logger.info("epoch: %d", epoch)
 			pbar = tqdm(total=len(train))
+			train_batches = self.get_batches(train)
 			loss = 0
-			for batch in train:
-				loss += self.train_on_batch(session)
-				pbar.update(1)
+			for data, label in train_batches:
+				loss += self.train_on_batch(session, data, label)
+				pbar.update(self.config.batch_size)
 			pbar.close()
 			loss /= len(train)
-			logger.info("loss: %f", loss)
+			self.logger.info("loss: %f", loss)
 
-	def get_embedding(session):
-		embedding_in, embedding_out = sess.run([self.embedding_in, self.embedding_out])
+	def get_embedding(self, session):
+		embedding_in, embedding_out = session.run([self.embedding_in, self.embedding_out])
 		return embedding_in, embedding_out
+
+	def get_batches(self, train):
+		num_batches = int(len(train) / self.config.batch_size)
+		batches = []
+		for i in xrange(num_batches):
+			data = np.zeros([self.config.batch_size, self.config.dim_V], dtype="float32")
+			label = np.zeros([self.config.batch_size, self.config.dim_V], dtype="float32")
+			for j in xrange(self.config.batch_size):
+				data[j], label[j] = train[i * self.config.batch_size + j]
+			batches.append((data,label))
+		return batches
 
 
 def main():
-	logger = logging.getLogger('main')
+	logger = logging.getLogger('word2vec')
+	config = Config()
 	with tf.Graph().as_default():
 		logger.info("Building model...",)
 		start = time.time()
@@ -162,7 +176,19 @@ def main():
 
 		logger.info("Loading and preparing data...",)
 		start = time.time()
-		train, dev = loaddata()
+		# train, dev = loaddata()
+		
+		sentences = [[i % 4 for i in xrange(20)] for j in xrange(30)]
+		train = []
+		dev = []
+		for sentence in sentences:
+			for word_index in xrange(len(sentence)):
+				data = np.zeros(config.dim_V)
+				label = np.zeros(config.dim_V)
+				data[sentence[word_index]] = 1
+				label[sentence[word_index]] = 1
+				train.append((data, label))
+
 		logger.info("took %.2f seconds", time.time() - start)
 
 		init = tf.global_variables_initializer()
@@ -172,6 +198,8 @@ def main():
 			session.run(init)
 			model.fit(session, saver, train, dev)
 			embedding_in, embedding_out = model.get_embedding(session)
-			numpy.save('embedding in', embedding_in)
-			numpy.save('embedding out', embedding_out)
+			print("embedding in:\n", embedding_in)
+			print("embedding out:\n", embedding_out)
 
+
+main()
