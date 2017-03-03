@@ -79,8 +79,8 @@ for file_name in files:
 	#dump the gram info
 	
 	# testing file non-existing. Don't want to break things
-	#with open(args.outputpath + file_name + ".tgrams", "w") as F:
-	#	F.write(json.dumps(dic))
+	with open(args.outputpath + file_name + ".tgrams", "w") as F:
+		F.write(json.dumps(dic))
 
 	print "Finish Processing File " + file_name
 	file_count += 1
