@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser(description='Given a n-gram statistic files, ge
 parser.add_argument('inputpath', type=str, help='input directory that contains all dump files')
 parser.add_argument('-s', '--seed', default=1234, type=int, help='random seed')
 parser.add_argument('-o', '--outputpath', default='./char_seq.grams', type=str, help='output path')
-parser.add_argument('-t', '--threashold', default=5, type=int, help='cutoff threshold, inclusive')
+parser.add_argument('-t', '--threashold', default=6, type=int, help='cutoff threshold, inclusive')
 # Macros and Constants
 args = parser.parse_args()
 print(args)
@@ -26,7 +26,7 @@ def add_char_gram(Dict, text, count, threashold, debug = False):
 	if len(text.split(' ')) > 1:
 		return
 	text_length = len(text)
-	for gram_length in xrange(2, threashold):
+	for gram_length in xrange(2, threashold + 1):
 		for i in range(text_length + 1 - gram_length):
 			gram = unicode("".join(text[i : i + gram_length]))
 			try:
