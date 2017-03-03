@@ -1,0 +1,1 @@
+python tokenizer.py ./Articles /media/pear/Storage/wiki_gram_collected -n 2

@@ -1,3 +1,6 @@
+Articles/*
+Tokenized/*
+
 # Raw Data
 *.bz2
 *.xml
