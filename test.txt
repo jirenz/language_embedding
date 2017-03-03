@@ -1,0 +1,3 @@
+python tokenizer.py ./Articles /media/pear/Storage/wiki_gram_trimmed/AA -n 1
+python tokenizer.py ./Articles /media/pear/Storage/wiki_gram_collected
+
