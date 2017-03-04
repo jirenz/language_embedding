@@ -22,8 +22,14 @@ def remove_nonascii(text):
 	return str(''.join([i if ord(i) < 128 else "" for i in text]))
 
 #	kepp characters in a string iff it's in the alphabet
+#	For training
 def filter_with_alphabet(text, alphabet):
 	return ''.join(c for c in text if c in alphabet)
+
+#	sanitizes a line read from raw sources
+#	For general purposes
+def sanitize_line(line):
+	return remove_nonascii(line).lower()
 	
 #	core function that will return the parsed sentence as a list of grams
 def tokenize(Dict, sentence, gram_length, token_weight):
