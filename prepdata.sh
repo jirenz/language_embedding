@@ -1,24 +1,24 @@
 #!/usr/bin/bash
-DATA_PATH = /datadrive/data
+DATA_PATH=/datadrive/data
 
-RAW_DATA_FILE = enwiki-20170220-pages-articles-multistream.xml.bz2
-RAW_DATA_URL = https://dumps.wikimedia.org/enwiki/20170220/enwiki-20170220-pages-articles-multistream.xml.bz2
+RAW_DATA_FILE=enwiki-20170220-pages-articles-multistream.xml.bz2
+RAW_DATA_URL=https://dumps.wikimedia.org/enwiki/20170220/enwiki-20170220-pages-articles-multistream.xml.bz2
 
-WIKI_EXTRACT_PATH = WikiDump
-CHUNK_SIZE = 150M
-CHUNKED_ARTICLES_PATH = wiki_articles
+WIKI_EXTRACT_PATH=WikiDump
+CHUNK_SIZE=150M
+CHUNKED_ARTICLES_PATH=wiki_articles
 
-GRAM_W_COUNT_PATH = wiki_gram
-GRAM_W_COUNT_SIZE = 3
+GRAM_W_COUNT_PATH=wiki_gram
+GRAM_W_COUNT_SIZE=3
 
-GRAM_TRIM_PATH = wiki_gram_trimmed
-GRAM_TRIM_THRESHOLD = 2
+GRAM_TRIM_PATH=wiki_gram_trimmed
+GRAM_TRIM_THRESHOLD=2
 
-GRAM_COLLECT_PATH = wiki_gram_collected
-GRAM_COLLECT_FILE_NAME = wiki_grams
-GRAM_COLLECT_FILE = $DATA_PATH/$GRAM_COLLECT_PATH/$GRAM_COLLECT_FILE_NAME
+GRAM_COLLECT_PATH=wiki_gram_collected
+GRAM_COLLECT_FILE_NAME=wiki_grams
+GRAM_COLLECT_FILE=$DATA_PATH/$GRAM_COLLECT_PATH/$GRAM_COLLECT_FILE_NAME
 
-TOKENIZED_PATH = wiki_tokenized
+TOKENIZED_PATH=wiki_tokenized
 
 #Download files
 if [ ! -e $DATA_PATH/$RAW_DATA_FILE]; then
