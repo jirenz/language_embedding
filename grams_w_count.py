@@ -14,31 +14,22 @@ import random
 import argparse
 from helper import sanitize_line
 from helper import filter_with_alphabet
+from nltk import word_tokenize
 
 parser = argparse.ArgumentParser(description='For given wikipedia dump files, \
 	generate dump of article n-gram statistics')
 parser.add_argument('inputfiles', metavar='path', type=str, nargs='+',
 					help='files to be processed')
 parser.add_argument('-o', '--outputpath', default='./', type=str, help='output path')
-parser.add_argument('-a', '--alphabet', default='abcdefghijklmnopqrstuvwxyz -\'',
+parser.add_argument('-a', '--alphabet', default='abcdefghijklmnopqrstuvwxyz -',
 	 type=str, help='supported alphabet')
 parser.add_argument('-n', '--ngrams', metavar='n', default=3, type=int, help='store grams up to n')
-
-# parser.add_argument('--pathisfile', action='store_true', help='filepath is only one file')
-# parser.add_argument('-c', '--numFiles', type=int, help='number of files to process')
-# parser.add_argument('inputpath', type=str, help='input directory that contains all dump files')
-# parser.add_argument('-s', '--seed', default=1234, type=int, help='random seed')
-# random.seed(args.seed)
-
 
 # Macros and Constants
 args = parser.parse_args()
 print(args)
 
-# # Begin Extract List of files
-# files = [f for f in listdir(args.inputpath) if isfile(join(args.inputpath, f))]
-# print len(files), "files found."
-# # End Extract List of files
+print len(args.inputfiles), "files found."
 
 # Add each n-gram (n = gram_length) from texts, into Dict
 def add_to_dict(Dict, text, gram_length, debug = False):
@@ -68,7 +59,9 @@ for inputfile in args.inputfiles:
 				if Counter % 100 == 0:
 					print "Finished processing article:", Counter
 				continue
-			text = (filter_with_alphabet(sanitize_line(line), args.alphabet).split())
+
+			text = word_tokenize(filter_with_alphabet(sanitize_line(line), args.alphabet))
+			# text = (filter_with_alphabet(sanitize_line(line), args.alphabet).split())
 			for gram_length in range(1, args.ngrams + 1):
 				add_to_dict(dic, text, gram_length)
 			# cast to unicode string, to lower case, remove non-alphabet characters before processing

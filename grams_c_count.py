@@ -10,14 +10,13 @@ from tqdm import tqdm
 import argparse
 
 parser = argparse.ArgumentParser(description='Given a n-gram statistic files, generate sub-word sequence info')
-parser.add_argument('inputpath', type=str, help='input directory that contains all dump files')
-parser.add_argument('-s', '--seed', default=1234, type=int, help='random seed')
+parser.add_argument('inputfiles', metavar='path', type=str, nargs='+',
+					help='files to be processed')
 parser.add_argument('-o', '--outputpath', default='./char_seq.grams', type=str, help='output path')
 parser.add_argument('-t', '--threashold', default=6, type=int, help='cutoff threshold, inclusive')
 # Macros and Constants
 args = parser.parse_args()
 print(args)
-random.seed(args.seed)
 
 data = {}
 counter = 0
@@ -36,18 +35,11 @@ def add_char_gram(Dict, text, count, threashold, debug = False):
 
 # Begin Extract List of files
 with open(args.outputpath, "w") as output_file:
-	files = [f for f in listdir(args.inputpath) if isfile(join(args.inputpath, f))]
-	files.sort()
-	print len(files), "files found."
+	print len(args.inputfiles), "files found."
 	# End Extract List of files
-	for file_name in files:
-		if file_name[0] == '.':
-			continue
-		# if args.numFiles and file_count > args.numFiles:
-		# 	break;
-		file_path = args.inputpath + "/" + file_name
-		print "Processing file:", file_path
-		with open(file_path, "r") as F:
+	for inputfile in args.inputfiles:
+		print "Processing file:", inputfile
+		with open(inputfile, "r") as F:
 			result = json.load(F)
 			pbar = tqdm(total=len(result))
 			for k,v in result.iteritems():
