@@ -21,36 +21,36 @@ GRAM_COLLECT_FILE=$DATA_PATH/$GRAM_COLLECT_PATH/$GRAM_COLLECT_FILE_NAME
 TOKENIZED_PATH=wiki_tokenized
 
 #Download files
-if [ ! -e $DATA_PATH/$RAW_DATA_FILE]; then
+if [ ! -e $DATA_PATH/$RAW_DATA_FILE ]; then
 	wget $RAW_DATA_URL -O $DATA_PATH/$RAW_DATA_FILE
 fi
 #Chunk data
-if [ ! -e $DATA_PATH/$CHUNKED_ARTICLES_PATH/AA/wiki_00]; then
+if [ ! -e $DATA_PATH/$CHUNKED_ARTICLES_PATH/AA/wiki_00 ]; then
 	python $WIKI_EXTRACT_PATH/WikiExtractor.py -o $DATA_PATH/$CHUNKED_ARTICLES_PATH -b $CHUNK_SIZE $DATA_PATH/$RAW_DATA_FILE
 fi
 # Count vocab
-if [ ! -e $DATA_PATH/$GRAM_W_COUNT_PATH/wiki_00*]; then
+if [ ! -e $DATA_PATH/$GRAM_W_COUNT_PATH/wiki_00* ]; then
 	mkdir $DATA_PATH/$GRAM_W_COUNT_PATH
 	python grams_w_count.py -n $GRAM_W_COUNT_SIZE -o $DATA_PATH/$GRAM_W_COUNT_PATH $DATA_PATH/$CHUNKED_ARTICLES_PATH/AA/*
 fi
 # Trim vocab
-if [ ! -e $DATA_PATH/$GRAM_TRIM_PATH/wiki_00*]; then
+if [ ! -e $DATA_PATH/$GRAM_TRIM_PATH/wiki_00* ]; then
 	mkdir $DATA_PATH/$GRAM_TRIM_PATH
 	python grams_trim.py -t $GRAM_TRIM_THRESHOLD -o $DATA_PATH/$GRAM_TRIM_PATH $DATA_PATH/$GRAM_W_COUNT_PATH/*
 fi
 # Collect vocab, reduce to one vocab file
-if [ ! -e $GRAM_COLLECT_FILE]; then
+if [ ! -e $GRAM_COLLECT_FILE ]; then
 	mkdir $DATA_PATH/$GRAM_COLLECT_PATH
 	python grams_reduce.py -t $GRAM_TRIM_THRESHOLD -o $GRAM_COLLECT_FILE $DATA_PATH/$GRAM_TRIM_PATH/*
 fi
 
 # Tokenize articles
-if [ ! -e $DATA_PATH/$CHUNKED_ARTICLES_PATH/wiki_00]; then
+if [ ! -e $DATA_PATH/$CHUNKED_ARTICLES_PATH/wiki_00 ]; then
 	mkdir $DATA_PATH/$TOKENIZED_PATH
 	python tokenizer.py $DATA_PATH/$CHUNKED_ARTICLES_PATH $GRAM_COLLECT_FILE -o $DATA_PATH/$TOKENIZED_PATH
 fi
 # Collect Tokenized articles into raw text
-if [ ! -e $DATA_PATH/$TOKENIZED_PATH/wiki_for_glove]; then
+if [ ! -e $DATA_PATH/$TOKENIZED_PATH/wiki_for_glove ]; then
 	python generate_raw_gram_text.py -i $DATA_PATH/$TOKENIZED_PATH/articles -o $DATA_PATH/$TOKENIZED_PATH wiki_for_glove
 fi
 
