@@ -62,9 +62,9 @@ Dict_gram_to_label = {} # provide each gram with a unique number as lable
 Dict_label_to_gram = {}
 count = 0
 for key in Dict:
-	count += 1
 	Dict_gram_to_label[key] = count
 	Dict_label_to_gram[count] = key
+	count += 1
 with open(join(outputpath, "gram_label.json"), "w") as F:
 	F.write(json.dumps(Dict_gram_to_label))
 with open(join(outputpath, "label_gram.json"), "w") as F:
