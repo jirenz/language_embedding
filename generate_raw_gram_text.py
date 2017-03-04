@@ -18,8 +18,8 @@ import numpy as np
 from helper import load_data_from_json
 
 parser = argparse.ArgumentParser(description='Tokenize the given article using given gram-set')
-parser.add_argument('-i', '--inputpath', default='./Tokenized/Articles', type=str, help='input directory that contains all articles')
-parser.add_argument('-o', '--outputpath', default='./Tokenized', type=str, help='output path')
+parser.add_argument('-i', '--inputpath', default='./wiki_tokenized/articles', type=str, help='input directory that contains all articles')
+parser.add_argument('-o', '--outputpath', default='./wiki_tokenized', type=str, help='output path')
 parser.add_argument('outputfile', type=str, help='name of output file')
 args = parser.parse_args()
 print(args)

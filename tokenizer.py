@@ -23,7 +23,7 @@ parser = argparse.ArgumentParser(description='Tokenize the given article using g
 parser.add_argument('inputpath', type=str, help='input directory that contains all articles')
 parser.add_argument('grampath', type=str, help='input directory that contains all gram-sets')
 parser.add_argument('-s', '--seed', default=1234, type=int, help='random seed')
-parser.add_argument('-o', '--outputpath', default='./Tokenized', type=str, help='output path')
+parser.add_argument('-o', '--outputpath', default='./wiki_tokenized', type=str, help='output path')
 parser.add_argument('-p', '--separator', default='[,.;]', type=str, help='characters that separate sentences')
 parser.add_argument('-n', '--number', default=-1, type=int, help='number of gram files we use')
 
