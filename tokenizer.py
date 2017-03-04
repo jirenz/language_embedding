@@ -85,9 +85,9 @@ for article_file in articles:
 		tmp = tokenize(Dict, sentences[i], gram_length, token_weight)
 		tokenized_sentences[i] = tmp
 		tokenized_labels[i] = get_gram_label(Dict_gram_to_label, tmp)
-	with open(join(outputpath, article_file + ".readable"), "w") as F:
+	with open(join(outputpath + "/Readable_Articles", article_file + ".readable"), "w") as F:
 		F.write(json.dumps(tokenized_sentences))
-	with open(join(outputpath, article_file), "w") as F:
+	with open(join(outputpath + "/Articles", article_file), "w") as F:
 		F.write(json.dumps(tokenized_labels))
 	article_file_count += 1
 	print "Finished processing", article_file_count, "file(s)."
