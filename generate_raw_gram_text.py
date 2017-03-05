@@ -32,18 +32,21 @@ articles = [f for f in listdir(inputpath) if isfile(join(inputpath, f))]
 articles.sort()
 print len(articles), "article files found."
 
-Dict = {}
-for article in articles:
-	load_data_from_json(Dict, join(inputpath, article))
+filecount = 0
 
 #	The keys in Dict should be consecutive integers starting from 0. We preserves this order.
 with open(join(outputpath, outputfile), "w") as F:
-	N = len(Dict)
-	for key_int in range(N):
-		sentence = Dict[str(key_int)]
-		for token in sentence:
-			if (token != -1): F.write(str(token) + " ")
-	F.write("\n")
-
+	for article in articles:
+		print "starting to process file", filecount
+		Dict = {}
+		load_data_from_json(Dict, join(inputpath, article))
+		N = len(Dict)
+		for key_int in range(N):
+			sentence = Dict[str(key_int)]
+			for token in sentence:
+				if (token != -1): F.write(str(token) + " ")
+		F.write("\n")
+		print "finished processing file", filecount
+		filecount += 1
 	
 	

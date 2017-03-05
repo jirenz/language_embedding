@@ -1,10 +1,3 @@
-"""
-ngram-stats.py :	For given wikipedia dump files (preprocessed by WikiExtractor),
-					output the most frequent n-grams for n in [2, k], where k is
-					given in input (k = 2 by default).
-
-Usage :	python ngram-stats.py [-k value-of-k] input-directory
-"""
 
 import sys
 import json
@@ -14,24 +7,9 @@ import random
 import argparse
 from helper import sanitize_line
 from helper import filter_with_alphabet
+from helper import write_checkpoint_file
 from nltk import word_tokenize
 from multiprocessing import Process
-
-parser = argparse.ArgumentParser(description='For given wikipedia dump files, \
-	generate dump of article n-gram statistics')
-parser.add_argument('inputfiles', metavar='path', type=str, nargs='+',
-					help='files to be processed')
-parser.add_argument('-o', '--outputpath', default='./', type=str, help='output path')
-parser.add_argument('-a', '--alphabet', default='abcdefghijklmnopqrstuvwxyz -',
-	 type=str, help='supported alphabet')
-parser.add_argument('-n', '--ngrams', metavar='n', default=3, type=int, help='store grams up to n')
-parser.add_argument('--cores', default=6, type=int, help='number of concurrent threads')
-
-# Macros and Constants
-args = parser.parse_args()
-print(args)
-
-print len(args.inputfiles), "files found."
 
 # Add each n-gram (n = gram_length) from texts, into Dict
 def add_to_dict(Dict, text, gram_length, debug = False):
@@ -47,8 +25,8 @@ def add_to_dict(Dict, text, gram_length, debug = False):
 def worker_task(files, args, worker_id):
 	Counter = 0 # Number of articles processed
 	file_count = 0
-	for inputfile in args.inputfiles:
-		os.stdout.write("%d: Processing file:%s\n", worker_id, inputfile)
+	for inputfile in files:
+		sys.stdout.write("{}: Processing file:{}\n".format(worker_id, inputfile))
 		dic = {}
 		with open(inputfile, "r") as F:
 			text = []
@@ -59,8 +37,8 @@ def worker_task(files, args, worker_id):
 				if line.startswith("</doc>"):
 					# some paragraph ends
 					Counter += 1
-					if Counter % 100 == 0:
-						os.stdout.write("%d: Finished processing article:%d\n", worker_id, Counter)
+					if Counter % 5000 == 0:
+						sys.stdout.write("{}: Finished processing article:{}\n".format(worker_id, Counter))
 					continue
 
 				text = word_tokenize(filter_with_alphabet(sanitize_line(line), args.alphabet))
@@ -71,24 +49,49 @@ def worker_task(files, args, worker_id):
 				
 		#dump the gram info	
 		file_name, _ = splitext(basename(inputfile))
-		with open(args.outputpath + file_name + ".wgram", "w") as F:
+		with open(join(args.outputpath, file_name + ".wgram"), "w") as F:
 			F.write(json.dumps(dic))
 
-		os.stdout.write("%d:Finished processing file:%s\n", worker_id, inputfile)
+		sys.stdout.write("{}: Finished processing file:{}\n".format(worker_id, inputfile))
 		file_count += 1
 		# clear up
 		del dic
 
+if __name__ == "__main__":
+	parser = argparse.ArgumentParser(description='For given wikipedia dump files, \
+		generate dump of article n-gram statistics')
+	parser.add_argument('inputfiles', metavar='path', type=str, nargs='+',
+						help='files to be processed')
+	parser.add_argument('-o', '--outputpath', default='./', type=str, help='output path')
+	parser.add_argument('-a', '--alphabet', default='abcdefghijklmnopqrstuvwxyz -',
+		 type=str, help='supported alphabet')
+	parser.add_argument('-n', '--ngrams', metavar='n', default=3, type=int, help='store grams up to n')
+	parser.add_argument('--cores', default=6, type=int, help='number of concurrent threads')
 
-workers = []
+	# Macros and Constants
+	args = parser.parse_args()
+	print(args)
 
-for i in range(0, len(args.inputfiles), int(len(args.inputfiles) / (1. * args.cores)) + 1):
-	files_for_worker = args.inputfiles[i:i + n]
-	p = Process(target=worker_task, args=(files_for_worker, args, worker_id))
-	p.start()
-	workers.append(p)
-for worker in workers:
-	worker.join():
+	print len(args.inputfiles), "files found."
 
-# End Processing files
+	workers = []
+
+	files_per_worker = int(len(args.inputfiles) / (1. * args.cores)) + 1
+	sys.stdout.write("{} files per worker\n".format(files_per_worker))
+	for i in range(0, len(args.inputfiles), files_per_worker):
+		end = i + files_per_worker
+		if end > len(args.inputfiles):
+			end = len(args.inputfiles)
+		files_for_worker = args.inputfiles[i:end]
+		p = Process(target=worker_task, args=(files_for_worker, args, i / files_per_worker))
+		p.start()
+		workers.append(p)
+	for idx, worker in enumerate(workers):
+		worker.join()
+		sys.stdout.write("{}: Exited with code {}\n".format(idx, worker.exitcode))
+		if worker.exitcode != 0:
+			exit(1)
+
+	write_checkpoint_file(args.outputpath)
+	# End Processing files
 

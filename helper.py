@@ -4,6 +4,7 @@ import json
 import re
 import numpy as np
 
+
 #	This helper function loads a given json file and combine it to the
 #	current dictionary. The resulting dictionary can be quite huge.
 def load_data_from_json(Dict, filepath):
@@ -34,6 +35,8 @@ def sanitize_line(line):
 #	core function that will return the parsed sentence as a list of grams
 def tokenize(Dict, sentence, gram_length, token_weight):
 	text = sentence.split(" ")
+	if text[0] == "":
+		text = text[1:]
 	result = []
 	N = len(text)
 	# randomized algorithm, up to change
@@ -56,3 +59,30 @@ def get_gram_label(Dict, sentence):
 		result.append(Dict.get(gram, -1))
 	return result
 
+def write_checkpoint_file(path):
+	try:
+		from os import environ
+		from os.path import join
+		if 'SIGNAL_FILE' in environ:
+			from datetime import datetime
+			i = datetime.now()
+			print str(i)
+			with open(join(path, environ['SIGNAL_FILE'])) as f:
+				f.write()
+	except:
+		sys.stdout.write("Finished but cannot write signal file")
+		pass
+
+def mkdir_p(path):
+	import os
+	try:
+		os.mkdir(path)
+	except OSError as exc:  # Python >2.5
+		if os.path.isdir(path):
+			pass
+		else:
+			raise
+		# if exc.errno == errno.EEXIST and os.path.isdir(path):
+		# 	pass
+		# else:
+		# 	raise

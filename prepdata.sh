@@ -1,5 +1,5 @@
 #!/bin/bash
-DATA_PATH=/datadrive/data
+export DATA_PATH=/datadrive/data
 
 RAW_DATA_FILE=enwiki-20170220-pages-articles-multistream.xml.bz2
 RAW_DATA_URL=https://dumps.wikimedia.org/enwiki/20170220/enwiki-20170220-pages-articles-multistream.xml.bz2
@@ -24,7 +24,7 @@ TOKENIZED_PATH=wiki_tokenized
 
 PROCESSED_DUMP_NAME=wiki_token
 
-SIGNAL_FILE=.created_at.txt
+export SIGNAL_FILE=.created_at.txt
 
 rm log.txt
 
@@ -49,11 +49,11 @@ fi
 # Count vocab
 if [ ! -e $DATA_PATH/$GRAM_W_COUNT_PATH/$SIGNAL_FILE ]; then
 	mkdir -pv $DATA_PATH/$GRAM_W_COUNT_PATH
-	find $DATA_PATH/$CHUNKED_ARTICLES_PATH/AA/* 2>>log.txt | xargs python grams_w_count.py -n $GRAM_W_COUNT_SIZE -o $DATA_PATH/$GRAM_W_COUNT_PATH 
+	find $DATA_PATH/$CHUNKED_ARTICLES_PATH/AA/wiki* 2>>log.txt | xargs python grams_w_count.py -n $GRAM_W_COUNT_SIZE -o $DATA_PATH/$GRAM_W_COUNT_PATH 
 	# python grams_w_count.py -n $GRAM_W_COUNT_SIZE -o $DATA_PATH/$GRAM_W_COUNT_PATH $DATA_PATH/$CHUNKED_ARTICLES_PATH/AA/*
 	if [ $? -eq 0 ]; then
 		echo successfully counted grams
-		date > $DATA_PATH/$GRAM_W_COUNT_PATH/$SIGNAL_FILE
+		# date > $DATA_PATH/$GRAM_W_COUNT_PATH/$SIGNAL_FILE
 	else
 		exit -1
 	fi
@@ -61,11 +61,11 @@ fi
 # Trim vocab
 if [ ! -e $DATA_PATH/$GRAM_TRIM_PATH/$SIGNAL_FILE ]; then
 	mkdir -pv $DATA_PATH/$GRAM_TRIM_PATH
-	find $DATA_PATH/$GRAM_TRIM_PATH $DATA_PATH/$GRAM_W_COUNT_PATH/* 2>>log.txt | xargs python grams_trim.py -t $GRAM_TRIM_THRESHOLD -o $DATA_PATH/$GRAM_TRIM_PATH
+	find $DATA_PATH/$GRAM_W_COUNT_PATH/wiki* 2>>log.txt | xargs python grams_trim.py -t $GRAM_TRIM_THRESHOLD -o $DATA_PATH/$GRAM_TRIM_PATH
 	#python grams_trim.py -t $GRAM_TRIM_THRESHOLD -o $DATA_PATH/$GRAM_TRIM_PATH $DATA_PATH/$GRAM_W_COUNT_PATH/*
 	if [ $? -eq 0 ]; then
 		echo successfully trimmed vocabulary
-		date > $DATA_PATH/$GRAM_TRIM_PATH/$SIGNAL_FILE
+		# date > $DATA_PATH/$GRAM_TRIM_PATH/$SIGNAL_FILE
 	else
 		exit -1
 	fi	
@@ -73,7 +73,7 @@ fi
 # Collect vocab, reduce to one vocab file
 if [ ! -e $GRAM_COLLECT_FILE ]; then
 	mkdir -pv $DATA_PATH/$GRAM_COLLECT_PATH
-	find $GRAM_COLLECT_FILE $DATA_PATH/$GRAM_TRIM_PATH/* 2>>log.txt | xargs python grams_reduce.py -t $GRAM_TRIM_THRESHOLD -o
+	find $DATA_PATH/$GRAM_TRIM_PATH/wiki* 2>>log.txt | xargs python grams_reduce.py -o $GRAM_COLLECT_FILE 
 	# python grams_reduce.py -t $GRAM_TRIM_THRESHOLD -o $GRAM_COLLECT_FILE $DATA_PATH/$GRAM_TRIM_PATH/*
 	if [ $? -eq 0 ]; then
 		echo successfully collected vocabulary
@@ -85,11 +85,13 @@ fi
 # Tokenize articles
 if [ ! -e $DATA_PATH/$TOKENIZED_PATH/$SIGNAL_FILE ]; then
 	mkdir -pv $DATA_PATH/$TOKENIZED_PATH
-	python tokenizer.py $DATA_PATH/$CHUNKED_ARTICLES_PATH $GRAM_COLLECT_FILE -o $DATA_PATH/$TOKENIZED_PATH
+	python tokenizer.py $DATA_PATH/$CHUNKED_ARTICLES_PATH/AA $DATA_PATH/$GRAM_COLLECT_PATH -o $DATA_PATH/$TOKENIZED_PATH
 	if [ $? -eq 0 ]; then
 		echo successfully tokenized dump
-		date > $DATA_PATH/$TOKENIZED_PATH/$SIGNAL_FILE
+		# date > $DATA_PATH/$TOKENIZED_PATH/$SIGNAL_FILE
 	else
+		exit -1
+	fi
 fi
 
 # Collect Tokenized articles into raw text
@@ -98,6 +100,8 @@ if [ ! -e $DATA_PATH/$TOKENIZED_PATH/$PROCESSED_DUMP_NAME ]; then
 	if [ $? -eq 0 ]; then
 		echo successfully generated new dump
 	else
+		exit -1
+	fi
 fi
 
 echo Finished Processing Data
