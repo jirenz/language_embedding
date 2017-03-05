@@ -45,7 +45,7 @@ if [ ! -e $DATA_PATH/$CHUNKED_ARTICLES_PATH/$SIGNAL_FILE ]; then
 		exit -1
 	fi
 fi
-exit 0
+
 # Count vocab
 if [ ! -e $DATA_PATH/$GRAM_W_COUNT_PATH/$SIGNAL_FILE ]; then
 	mkdir -pv $DATA_PATH/$GRAM_W_COUNT_PATH
