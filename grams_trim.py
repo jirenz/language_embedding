@@ -13,7 +13,6 @@ parser.add_argument('inputfiles', metavar='path', type=str, nargs='+',
 # parser.add_argument('-s', '--seed', default=1234, type=int, help='random seed')
 parser.add_argument('-o', '--outputpath', default='./', type=str, help='output path')
 parser.add_argument('-t', '--threashold', default=2, type=int, help='cutoff threshold, inclusive')
-
 # Macros and Constants
 args = parser.parse_args()
 print(args)
