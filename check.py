@@ -14,5 +14,5 @@ with open(args.inputpath, "r") as F:
 		sorted_data.append((k,v))
 
 	print "Sorting Dictionary of size", len(sorted_data)
-	sorted_data = sorted(sorted_data, key=lambda entry : entry[0], reverse=True)
+	sorted_data = sorted(sorted_data, key=lambda entry : entry[0], reverse=False)
 	print sorted_data[:args.count]

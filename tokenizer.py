@@ -64,8 +64,8 @@ if __name__ == "__main__":
 	articles.sort()
 	print len(articles), "article files found."
 
-	mkdir_p(join(args.outputpath + "/Readable_Articles"))
-	mkdir_p(join(args.outputpath + "/Articles"))
+	mkdir_p(join(args.outputpath + "/readable_articles"))
+	mkdir_p(join(args.outputpath + "/articles"))
 
 	grams = [f for f in listdir(args.grampath) if isfile(join(args.grampath, f))]
 	grams.sort()

@@ -5,7 +5,7 @@ make glove
 # One optional argument can specify the language used for eval script: matlab, octave or [default] python
 
 # Version that operates on singly tokenized file
-mkdir -pv $DATA_PATH/$GRAM_TRIM_PATH
+
 DATA_PATH=/datadrive/data
 TOKENIZED_PATH=wiki_tokenized
 GLOVE_PATH=/datadrive/data/glove
