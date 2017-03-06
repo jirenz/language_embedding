@@ -28,15 +28,18 @@ for word, v in vectors.items():
 		continue
 	W[vocab[word], :] = v
 
+# count = 0
 with open('../glove/cooccurrence.shuf.bin', 'rb') as f_c:
 	while True:
+		# count += 1
+		# if count > 10000:
+		# 	break
 		try:
 			word1, word2, val = coocformatter.read_CREC(f_c)
 		except:
 			break
 		cooc[word1 - 1][word2 - 1] = val
 		cooc[word2 - 1][word1 - 1] = val
-exit(0)
 
 def evaluation(predictor, vocab):
 	filenames = [
@@ -100,7 +103,12 @@ def predictor(wd1, wd2, wd3):
 		cd = np.matmul(W, W[wd3[index]].reshape([-1, 1]))
 		ad = np.matmul(W, W[wd1[index]].reshape([-1, 1]))
 		cb = np.matmul(W[wd3[index]].T, W[wd2[index]])
-		prediction[index] = np.argmax(ab + cd  - ad - cb)
+		counted = ab + cd  - ad - cb
+		counted[wd1[index]] = -np.Inf
+		counted[wd2[index]] = -np.Inf
+		counted[wd3[index]] = -np.Inf
+
+		prediction[index] = np.argmax(counted)
 	return prediction
 
 def predictor2(wd1, wd2, wd3):
@@ -110,10 +118,44 @@ def predictor2(wd1, wd2, wd3):
 		cd = cooc[wd3[index]]
 		ad = cooc[wd1[index]]
 		cb = cooc[wd3[index]][wd2[index]]
-		prediction[index] = np.argmax(ab + cd  - ad - cb)
+		counted = ab + cd  - ad - cb
+		counted[wd1[index]] = -np.Inf
+		counted[wd2[index]] = -np.Inf
+		counted[wd3[index]] = -np.Inf
 
-print("evaluating vector")
-evaluation(predictor, vocab)
+		prediction[index] = np.argmax(counted)
+	return prediction
+
+
+def predictor3(wd1, wd2, wd3):
+	split_size = 100
+	W_norm = np.zeros(W.shape)
+	d = (np.sum(W ** 2, 1) ** (0.5))
+	W_norm = (W.T / d).T
+
+	predictions = np.zeros((len(wd1),))
+	num_iter = int(np.ceil(len(wd1) / float(split_size)))
+	for j in range(num_iter):
+		subset = np.arange(j*split_size, min((j + 1)*split_size, len(wd1)))
+
+		pred_vec = (W_norm[wd2[subset], :] - W_norm[wd1[subset], :]
+			+  W_norm[wd3[subset], :])
+		#cosine similarity if input W has been normalized
+		dist = np.dot(W_norm, pred_vec.T)
+
+		for k in range(len(subset)):
+			dist[wd1[subset[k]], k] = -np.Inf
+			dist[wd2[subset[k]], k] = -np.Inf
+			dist[wd3[subset[k]], k] = -np.Inf
+
+		# predicted word index
+		predictions[subset] = np.argmax(dist, 0).flatten()
+	return predictions
+
 print("evaluating cooc matrix")
 evaluation(predictor2, vocab)
+print("evaluating vector")
+evaluation(predictor, vocab)
+print("evaluating normalized vector")
+evaluation(predictor3, vocab)
 
