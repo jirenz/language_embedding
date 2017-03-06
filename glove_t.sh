@@ -5,15 +5,18 @@ make glove
 # One optional argument can specify the language used for eval script: matlab, octave or [default] python
 
 # Version that operates on singly tokenized file
+
 DATA_PATH=/datadrive/data
 TOKENIZED_PATH=wiki_tokenized
-GLOVE_PATH=glove
+GLOVE_PATH=$DATA_PATH/glove
+GLOVE_EXEC_PATH=glove
+mkdir -pv $GLOVE_PATH
 
 CORPUS=$DATA_PATH/$TOKENIZED_PATH/wiki_token
 VOCAB_FILE=$GLOVE_PATH/vocab.txt
 COOCCURRENCE_FILE=$GLOVE_PATH/cooccurrence.bin
 COOCCURRENCE_SHUF_FILE=$GLOVE_PATH/cooccurrence.shuf.bin
-BUILDDIR=$GLOVE_PATH/build
+BUILDDIR=$GLOVE_EXEC_PATH/build
 SAVE_FILE=$GLOVE_PATH/vectors
 VERBOSE=2
 MEMORY=40.0
