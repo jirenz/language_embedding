@@ -4,6 +4,7 @@ import os
 import numpy as np
 import coocformatter
 
+
 with open('../glove/vocab.txt', 'r') as f:
 	words = [x.rstrip().split(' ')[0] for x in f.readlines()]
 
@@ -41,7 +42,13 @@ with open('../glove/cooccurrence.shuf.bin', 'rb') as f_c:
 		cooc[word1 - 1][word2 - 1] = val
 		cooc[word2 - 1][word1 - 1] = val
 
-def evaluation(predictor, vocab):
+def dump_pred(file, ivocab, wd1, wd2, wd3, wd4, predictions):
+	for index in xrange(len(wd1)):
+		file.write("{}, {}, {}, {}, {}\n".format(ivocab[wd1[index]], ivocab[wd2[index]], 
+			ivocab[wd3[index]], ivocab[wd4[index]], ivocab[predictions[index]]))
+
+
+def evaluation(predictor, vocab, ivocab, result_file):
 	filenames = [
 		'capital-common-countries.txt', 'capital-world.txt', 'currency.txt',
 		'city-in-state.txt', 'family.txt', 'gram1-adjective-to-adverb.txt',
@@ -73,6 +80,8 @@ def evaluation(predictor, vocab):
 		ind1, ind2, ind3, ind4 = indices.T
 
 		predictions = predictor(ind1, ind2, ind3)
+
+		dump_pred(result_file, ind1, ind2, ind3, ind4, predictions)
 
 		val = (ind4 == predictions) # correct predictions
 		count_tot = count_tot + len(ind1)
@@ -152,10 +161,13 @@ def predictor3(wd1, wd2, wd3):
 		predictions[subset] = np.argmax(dist, 0).flatten()
 	return predictions
 
-print("evaluating cooc matrix")
-evaluation(predictor2, vocab)
-print("evaluating vector")
-evaluation(predictor, vocab)
-print("evaluating normalized vector")
-evaluation(predictor3, vocab)
+with open('eva_coocmatrix.txt', 'w') as F:
+	print("evaluating cooc matrix")
+	evaluation(predictor2, vocab, ivocab, F)
+with open('eva_vector.txt', 'w') as F:
+	print("evaluating vector")
+	evaluation(predictor, vocab, ivocab, F)
+with open('eva_norm_vector.txt', 'w') as F:
+	print("evaluating normalized vector")
+	evaluation(predictor3, vocab, ivocab, F)
 
