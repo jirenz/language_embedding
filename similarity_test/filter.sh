@@ -1,0 +1,1 @@
+ python filterVocab.py fullVocab.txt < yourVectors(.txt/.txt.gz) > filtVectors.txt

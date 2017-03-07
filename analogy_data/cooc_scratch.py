@@ -4,6 +4,15 @@ import os
 import numpy as np
 import coocformatter
 
+glove_path = '../../glove'
+
+words = []
+word_count = {}
+with open(glove_path + '/vocab.txt', 'r') as f:
+	for x in f.readlines():
+		word, count = x.rstrip().split(' ')
+		words.append(word)
+		word_count[word] = count
 
 with open('../glove/vocab.txt', 'r') as f:
 	words = [x.rstrip().split(' ')[0] for x in f.readlines()]
@@ -15,7 +24,50 @@ vocab_size = len(words)
 vocab = {w: idx for idx, w in enumerate(words)}
 ivocab = {idx: w for idx, w in enumerate(words)}
 
-with open('../glove/vectors.txt', 'r') as f:
+
+word_log_fre = np.zeros([len(words)], dtype="float32")
+for word in word_count:
+	word_log_fre[vocab[word]] = float(word_count[word])
+
+word_log_fre = np.log(word_log_fre)
+
+cooc = np.load('useful_cooc.npy')
+# print('cooc size', cooc.shape)
+# print('row', cooc[0].shape)
+# print('col', cooc[:,0].shape)
+
+filenames = [
+	'capital-common-countries.txt', 'capital-world.txt', 'currency.txt',
+	'city-in-state.txt', 'family.txt', 'gram1-adjective-to-adverb.txt',
+	'gram2-opposite.txt', 'gram3-comparative.txt', 'gram4-superlative.txt',
+	'gram5-present-participle.txt', 'gram6-nationality-adjective.txt',
+	'gram7-past-tense.txt', 'gram8-plural.txt', 'gram9-plural-verbs.txt',
+	]
+prefix = glove_path + '/eval/question-data/'
+
+used_words = {}
+for filename in filenames:
+	with open(os.path.join(prefix, filename), 'r') as f:
+		full_data = [line.rstrip().split(' ') for line in f]
+		for row in full_data:
+			for word in row:
+				used_words[word] = True
+uvocab = {}
+iuvocab = {}
+counter = 0
+for word in used_words:
+	uvocab[word] = counter
+	iuvocab[counter] = word
+	counter += 1
+# print len(uvocab), "useful words"
+
+neglect = []
+# neglect = ['the', 'in', 'and', 'of', 'is', 'a', 'one', 'to', 'was', 'that', 'for', 'by', 'an']
+print len(neglect), "words neglected"
+for neg_word in neglect:
+	cooc[vocab[neg_word],:] = 0
+
+with open(glove_path + '/vectors.txt', 'r') as f:
 		vectors = {}
 		for line in f:
 			vals = line.rstrip().split(' ')
@@ -28,19 +80,35 @@ for word, v in vectors.items():
 	if word == '<unk>':
 		continue
 	W[vocab[word], :] = v
+# cooc_full = np.zeros([len(words), len(words)])
+# print "loading cooc matrix"
+# with open(glove_path + '/cooccurrence.shuf.bin', 'rb') as f_c:
+# 	while True:
+# 		count += 1
+# 		if count % 10000 == 0:
+# 			print "count", count
+# 		try:
+# 			word1, word2, val = coocformatter.read_CREC(f_c)
+# 		except:
+# 			break
+# 		cooc_full[word1 - 1][word2 - 1] = val
+# 		cooc_full[word2 - 1][word1 - 1] = val
+# 		# try:
+# 		# 	if cooc[vocab[word1]][uvocab[word2]] != val:
+# 		# 		print "Error", "cooccur not match", word1, word2
+# 		# 	exit(-1)
+# 		# except KeyError:
+# 		# 	pass
+# 		# try:
+# 		# 	if cooc[vocab[word2]][uvocab[word1]] != val:
+# 		# 		print "Error", "cooccur not match", word2, word1
+# 		# 	exit(-1)
+# 		# except KeyError:
+# 		# 	pass
 
-# count = 0
-with open('../glove/cooccurrence.shuf.bin', 'rb') as f_c:
-	while True:
-		# count += 1
-		# if count > 10000:
-		# 	break
-		try:
-			word1, word2, val = coocformatter.read_CREC(f_c)
-		except:
-			break
-		cooc[word1 - 1][word2 - 1] = val
-		cooc[word2 - 1][word1 - 1] = val
+top_n = int(sys.argv[1])
+if top_n == None:
+	top_n = 1
 
 def dump_pred(file, ivocab, wd1, wd2, wd3, wd4, predictions):
 	for index in xrange(len(wd1)):
@@ -56,7 +124,7 @@ def evaluation(predictor, vocab, ivocab, result_file):
 		'gram5-present-participle.txt', 'gram6-nationality-adjective.txt',
 		'gram7-past-tense.txt', 'gram8-plural.txt', 'gram9-plural-verbs.txt',
 		]
-	prefix = '../glove/eval/question-data/'
+	prefix = glove_path + '/eval/question-data/'
 
 	# to avoid memory overflow, could be increased/decreased
 	# depending on system and vocab size
@@ -164,9 +232,9 @@ def predictor3(wd1, wd2, wd3):
 with open('eva_coocmatrix.txt', 'w') as F:
 	print("evaluating cooc matrix")
 	evaluation(predictor2, vocab, ivocab, F)
-with open('eva_vector.txt', 'w') as F:
-	print("evaluating vector")
-	evaluation(predictor, vocab, ivocab, F)
+# with open('eva_vector.txt', 'w') as F:
+# 	print("evaluating vector")
+# 	evaluation(predictor, vocab, ivocab, F)
 with open('eva_norm_vector.txt', 'w') as F:
 	print("evaluating normalized vector")
 	evaluation(predictor3, vocab, ivocab, F)

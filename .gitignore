@@ -1,7 +1,10 @@
 *.bin
+*.npy
+*.csv
 
 Articles/*
 Tokenized/*
+data/*
 
 # Raw Data
 *.bz2
