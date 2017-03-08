@@ -1,0 +1,69 @@
+(71290, 'words found')
+0 words neglected
+('vector dimension', 50)
+evaluating cooc matrix
+capital-common-countries.txt:
+ACCURACY TOP20: 89.92% (455/506)
+capital-world.txt:
+ACCURACY TOP20: 93.21% (3322/3564)
+currency.txt:
+ACCURACY TOP20: 3.69% (22/596)
+city-in-state.txt:
+ACCURACY TOP20: 89.83% (2093/2330)
+family.txt:
+ACCURACY TOP20: 30.95% (130/420)
+gram1-adjective-to-adverb.txt:
+ACCURACY TOP20: 0.00% (0/992)
+gram2-opposite.txt:
+ACCURACY TOP20: 6.75% (51/756)
+gram3-comparative.txt:
+ACCURACY TOP20: 0.53% (7/1332)
+gram4-superlative.txt:
+ACCURACY TOP20: 0.10% (1/992)
+gram5-present-participle.txt:
+ACCURACY TOP20: 2.27% (24/1056)
+gram6-nationality-adjective.txt:
+ACCURACY TOP20: 58.97% (897/1521)
+gram7-past-tense.txt:
+ACCURACY TOP20: 1.28% (20/1560)
+gram8-plural.txt:
+ACCURACY TOP20: 18.69% (249/1332)
+gram9-plural-verbs.txt:
+ACCURACY TOP20: 0.11% (1/870)
+Questions seen/total: 91.21% (17827/19544)
+Semantic accuracy: 81.20%  (6022/7416)
+Syntactic accuracy: 12.01%  (1250/10411)
+Total accuracy: 40.79%  (7272/17827)
+evaluating normalized vector
+capital-common-countries.txt:
+ACCURACY TOP20: 90.91% (460/506)
+capital-world.txt:
+ACCURACY TOP20: 58.75% (2094/3564)
+currency.txt:
+ACCURACY TOP20: 13.09% (78/596)
+city-in-state.txt:
+ACCURACY TOP20: 62.96% (1467/2330)
+family.txt:
+ACCURACY TOP20: 73.81% (310/420)
+gram1-adjective-to-adverb.txt:
+ACCURACY TOP20: 20.77% (206/992)
+gram2-opposite.txt:
+ACCURACY TOP20: 12.83% (97/756)
+gram3-comparative.txt:
+ACCURACY TOP20: 67.27% (896/1332)
+gram4-superlative.txt:
+ACCURACY TOP20: 26.21% (260/992)
+gram5-present-participle.txt:
+ACCURACY TOP20: 42.80% (452/1056)
+gram6-nationality-adjective.txt:
+ACCURACY TOP20: 86.52% (1316/1521)
+gram7-past-tense.txt:
+ACCURACY TOP20: 40.32% (629/1560)
+gram8-plural.txt:
+ACCURACY TOP20: 53.75% (716/1332)
+gram9-plural-verbs.txt:
+ACCURACY TOP20: 28.39% (247/870)
+Questions seen/total: 91.21% (17827/19544)
+Semantic accuracy: 59.45%  (4409/7416)
+Syntactic accuracy: 46.29%  (4819/10411)
+Total accuracy: 51.76%  (9228/17827)

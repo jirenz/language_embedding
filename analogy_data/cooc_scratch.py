@@ -2,7 +2,7 @@ import sys
 from struct import Struct
 import os
 import numpy as np
-import coocformatter
+import cooc_formatter
 
 glove_path = '../../glove'
 
@@ -14,7 +14,7 @@ with open(glove_path + '/vocab.txt', 'r') as f:
 		words.append(word)
 		word_count[word] = count
 
-with open('../glove/vocab.txt', 'r') as f:
+with open(glove_path + '/vocab.txt', 'r') as f:
 	words = [x.rstrip().split(' ')[0] for x in f.readlines()]
 
 print(len(words), "words found")
@@ -80,6 +80,11 @@ for word, v in vectors.items():
 	if word == '<unk>':
 		continue
 	W[vocab[word], :] = v
+
+
+W_norm = np.zeros(W.shape)
+d = (np.sum(W ** 2, 1) ** (0.5))
+W_norm = (W.T / d).T
 # cooc_full = np.zeros([len(words), len(words)])
 # print "loading cooc matrix"
 # with open(glove_path + '/cooccurrence.shuf.bin', 'rb') as f_c:
@@ -113,7 +118,7 @@ if top_n == None:
 def dump_pred(file, ivocab, wd1, wd2, wd3, wd4, predictions):
 	for index in xrange(len(wd1)):
 		file.write("{}, {}, {}, {}, {}\n".format(ivocab[wd1[index]], ivocab[wd2[index]], 
-			ivocab[wd3[index]], ivocab[wd4[index]], ivocab[predictions[index]]))
+			ivocab[wd3[index]], ivocab[wd4[index]], [ivocab[prediction[index]] for prediction in predictions]))
 
 
 def evaluation(predictor, vocab, ivocab, result_file):
@@ -149,9 +154,14 @@ def evaluation(predictor, vocab, ivocab, result_file):
 
 		predictions = predictor(ind1, ind2, ind3)
 
-		dump_pred(result_file, ind1, ind2, ind3, ind4, predictions)
+		dump_pred(result_file, ivocab, ind1, ind2, ind3, ind4, predictions)
 
-		val = (ind4 == predictions) # correct predictions
+
+		val = np.zeros(ind4.shape)
+		for ques_index in xrange(ind4.shape[0]):
+			for pred_index in xrange(top_n):
+				if ind4[ques_index] == predictions[pred_index][ques_index]:
+					val[ques_index] = 1 # correct predictions
 		count_tot = count_tot + len(ind1)
 		correct_tot = correct_tot + sum(val)
 		if i < 5:
@@ -162,8 +172,8 @@ def evaluation(predictor, vocab, ivocab, result_file):
 			correct_syn = correct_syn + sum(val)
 
 		print("%s:" % filenames[i])
-		print('ACCURACY TOP1: %.2f%% (%d/%d)' %
-			(np.mean(val) * 100, np.sum(val), len(val)))
+		print('ACCURACY TOP%d: %.2f%% (%d/%d)' %
+			(top_n, np.mean(val) * 100, np.sum(val), len(val)))
 
 	print('Questions seen/total: %.2f%% (%d/%d)' %
 		(100 * count_tot / float(full_count), count_tot, full_count))
@@ -173,69 +183,75 @@ def evaluation(predictor, vocab, ivocab, result_file):
 		(100 * correct_syn / float(count_syn), correct_syn, count_syn))
 	print('Total accuracy: %.2f%%  (%i/%i)' % (100 * correct_tot / float(count_tot), correct_tot, count_tot))
 
-def predictor(wd1, wd2, wd3):
-	prediction = np.zeros(wd1.shape)
-	for index in xrange(wd1.shape[0]):
-		ab = np.matmul(W[wd1[index]].T, W[wd2[index]])
-		cd = np.matmul(W, W[wd3[index]].reshape([-1, 1]))
-		ad = np.matmul(W, W[wd1[index]].reshape([-1, 1]))
-		cb = np.matmul(W[wd3[index]].T, W[wd2[index]])
-		counted = ab + cd  - ad - cb
-		counted[wd1[index]] = -np.Inf
-		counted[wd2[index]] = -np.Inf
-		counted[wd3[index]] = -np.Inf
+# def predictor(wd1, wd2, wd3):
+# 	prediction = np.zeros(wd1.shape)
+# 	for index in xrange(wd1.shape[0]):
+# 		ab = np.matmul(W[wd1[index]].T, W[wd2[index]])
+# 		cd = np.matmul(W, W[wd3[index]].reshape([-1, 1]))
+# 		ad = np.matmul(W, W[wd1[index]].reshape([-1, 1]))
+# 		cb = np.matmul(W[wd3[index]].T, W[wd2[index]])
+# 		counted = ab + cd  - ad - cb
+# 		counted[wd1[index]] = -np.Inf
+# 		counted[wd2[index]] = -np.Inf
+# 		counted[wd3[index]] = -np.Inf
 
-		prediction[index] = np.argmax(counted)
-	return prediction
+# 		prediction[index] = np.argmax(counted)
+# 	return prediction
 
 def predictor2(wd1, wd2, wd3):
-	prediction = np.zeros(wd1.shape)
+	predictions = []
+	for i in xrange(top_n):
+		predictions.append(np.zeros(wd1.shape))
 	for index in xrange(wd1.shape[0]):
-		ab = cooc[wd1[index]][wd2[index]]
-		cd = cooc[wd3[index]]
-		ad = cooc[wd1[index]]
-		cb = cooc[wd3[index]][wd2[index]]
+		ab = cooc[wd1[index]][uvocab[ivocab[wd2[index]]]]
+		cd = cooc[:, uvocab[ivocab[wd3[index]]]]
+		ad = cooc[:, uvocab[ivocab[wd1[index]]]]
+		cb = cooc[wd3[index]][uvocab[ivocab[wd2[index]]]]
 		counted = ab + cd  - ad - cb
 		counted[wd1[index]] = -np.Inf
 		counted[wd2[index]] = -np.Inf
 		counted[wd3[index]] = -np.Inf
-
-		prediction[index] = np.argmax(counted)
-	return prediction
+		for i in xrange(top_n):
+			if i > 0:
+				counted[predictions[i - 1][index]] = -10000
+			predictions[i][index] = np.argmax(counted)
+	return predictions
 
 
 def predictor3(wd1, wd2, wd3):
-	split_size = 100
-	W_norm = np.zeros(W.shape)
-	d = (np.sum(W ** 2, 1) ** (0.5))
-	W_norm = (W.T / d).T
+	predictions = []
+	for i in xrange(top_n):
+		predictions.append(np.zeros(wd1.shape))
+	
+	# num_iter = int(np.ceil(len(wd1) / float(split_size)))
+	for index in xrange(wd1.shape[0]):
+	# for j in range(num_iter):
+		# subset = np.arange(j*split_size, min((j + 1)*split_size, len(wd1)))
 
-	predictions = np.zeros((len(wd1),))
-	num_iter = int(np.ceil(len(wd1) / float(split_size)))
-	for j in range(num_iter):
-		subset = np.arange(j*split_size, min((j + 1)*split_size, len(wd1)))
-
-		pred_vec = (W_norm[wd2[subset], :] - W_norm[wd1[subset], :]
-			+  W_norm[wd3[subset], :])
+		pred_vec = (W_norm[wd2[index], :] - W_norm[wd1[index], :]
+			+  W_norm[wd3[index], :])
 		#cosine similarity if input W has been normalized
 		dist = np.dot(W_norm, pred_vec.T)
 
-		for k in range(len(subset)):
-			dist[wd1[subset[k]], k] = -np.Inf
-			dist[wd2[subset[k]], k] = -np.Inf
-			dist[wd3[subset[k]], k] = -np.Inf
+		dist[wd1[index]] = -np.Inf
+		dist[wd2[index]] = -np.Inf
+		dist[wd3[index]] = -np.Inf
 
 		# predicted word index
-		predictions[subset] = np.argmax(dist, 0).flatten()
+		for i in xrange(top_n):
+			if i > 0:
+				dist[predictions[i - 1][index]] = -10000
+			predictions[i][index] = np.argmax(dist)
+		# predictions[subset] = np.argmax(dist, 0).flatten()
 	return predictions
 
-with open('eva_coocmatrix.txt', 'w') as F:
+with open('eva_coocmatrix_top{}.txt'.format(top_n), 'w') as F:
 	print("evaluating cooc matrix")
 	evaluation(predictor2, vocab, ivocab, F)
 # with open('eva_vector.txt', 'w') as F:
 # 	print("evaluating vector")
 # 	evaluation(predictor, vocab, ivocab, F)
-with open('eva_norm_vector.txt', 'w') as F:
+with open('eva_norm_vector_top{}.txt'.format(top_n), 'w') as F:
 	print("evaluating normalized vector")
 	evaluation(predictor3, vocab, ivocab, F)
 
