@@ -110,3 +110,9 @@ def get_wordnet_info(word, context, config):
 	result['neighbors'] = neighbors
 
 	return result
+
+def interval_intersect(l1, r1, l2, r2):
+	# interval [l1, r1] and [l2, r2]
+	if r1 < l2: return True
+	if l1 > r2: return True
+	return False
