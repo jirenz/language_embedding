@@ -3,8 +3,50 @@ from nltk.corpus import wordnet as wn
 from nltk.stem.snowball import SnowballStemmer
 import sys
 import os
+import nltk
+print(nltk.pos_tag('What is the airspeed of an unladen swallow ?'.split()))
 
-# print len(list(wn.all_synsets('adj')))
+exit(0)
+
+counter = 0
+for ss in list(wn.all_synsets('v')):
+	if len(ss.entailments()) != 0:
+		print ss
+		print ss.entailments()
+		counter += 1
+		if counter > 3:
+			exit(0)
+	
+print "No entailments in ", counter
+
+from nltk.corpus import wordnet as wn
+
+# def is_noun(tag):
+#     return tag in ['NN', 'NNS', 'NNP', 'NNPS']
+
+
+# def is_verb(tag):
+#     return tag in ['VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ']
+
+
+# def is_adverb(tag):
+#     return tag in ['RB', 'RBR', 'RBS']
+
+
+# def is_adjective(tag):
+#     return tag in ['JJ', 'JJR', 'JJS']
+
+
+# def penn_to_wn(tag):
+#     if is_adjective(tag):
+#         return wn.ADJ
+#     elif is_noun(tag):
+#         return wn.NOUN
+#     elif is_adverb(tag):
+#         return wn.ADV
+#     elif is_verb(tag):
+#         return wn.VERB
+#     return None
 
 def lesk(context_sentence, ambiguous_word, pos=None, synsets=None):
     """Return a synset for an ambiguous word in a context.
@@ -58,33 +100,38 @@ def lesk(context_sentence, ambiguous_word, pos=None, synsets=None):
 # >>> wn.synset('dog.n.01').lowest_common_hypernyms(wn.synset('cat.n.01'))
 # [Synset('carnivore.n.01')]
 
-with open('data/debug/100sents.sent', 'r') as f:
-	sentences = f.readlines()
-	st = SnowballStemmer('english')
+# with open('data/debug/100sents.sent', 'r') as f:
+# 	sentences = f.readlines()
+st = SnowballStemmer('english')
 	# for sentence in sentences:
 	# 	for word in sentence.split(' '):
-	# 		
-	# for sent_index in xrange(5, len(sentences), 10):
-	sent_index = 10 
-	word_index = 4
-	try:
-		if sys.argv[1] is not None:
-			sent_index = int(sys.argv[1])
-		if sys.argv[2] is not None:
-			word_index = int(sys.argv[2])
-	except IndexError:
-		pass
-	sentence = sentences[sent_index]
-	print sentence
-	words = sentence.split(' ')
+# 		
+# for sent_index in xrange(5, len(sentences), 10):
+sent_index = 20
+# word_index = 14
+# try:
+# 	if sys.argv[1] is not None:
+# 		sent_index = int(sys.argv[1])
+# 	if sys.argv[2] is not None:
+# 		word_index = int(sys.argv[2])
+# except IndexError:
+# 	pass
+# sentence = sentences[sent_index]
+# print sentence
+# words = sentence.split(' ')
 #	for word_index in xrange(0, len(words), 5):
-	word = words[word_index]
-	ss = lesk(sentence, word)
-	print word, st.stem(word)
-	print wn.synsets(word)
-	print ss
-	if ss is not None:
-		print ss.hypernyms()
-		print ss.hyponyms()
-		for sim in ss.similar_tos():
-			print '    {}'.format(sim)
+# word = words[word_index]
+word = sys.argv[1]
+ss = lesk([word], word)
+print word, st.stem(word)
+print wn.synsets(word)
+print ss
+if ss is not None:
+	print "pos", ss.pos()
+	print "hyper", ss.hypernyms()
+	print "instance_hyper", ss.instance_hypernyms()
+	print "instance_hypo", ss.instance_hyponyms()
+	print "similar_to", ss.similar_tos()
+	print "attributes", ss.attributes()
+	print "also_sees", ss.also_sees()
+	print "entailments", ss.entailments()
