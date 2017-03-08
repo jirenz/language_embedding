@@ -1,0 +1,69 @@
+(71290, 'words found')
+0 words neglected
+('vector dimension', 50)
+evaluating cooc matrix
+capital-common-countries.txt:
+ACCURACY TOP5: 65.81% (333/506)
+capital-world.txt:
+ACCURACY TOP5: 63.10% (2249/3564)
+currency.txt:
+ACCURACY TOP5: 0.00% (0/596)
+city-in-state.txt:
+ACCURACY TOP5: 67.30% (1568/2330)
+family.txt:
+ACCURACY TOP5: 11.19% (47/420)
+gram1-adjective-to-adverb.txt:
+ACCURACY TOP5: 0.00% (0/992)
+gram2-opposite.txt:
+ACCURACY TOP5: 0.93% (7/756)
+gram3-comparative.txt:
+ACCURACY TOP5: 0.00% (0/1332)
+gram4-superlative.txt:
+ACCURACY TOP5: 0.00% (0/992)
+gram5-present-participle.txt:
+ACCURACY TOP5: 0.00% (0/1056)
+gram6-nationality-adjective.txt:
+ACCURACY TOP5: 23.27% (354/1521)
+gram7-past-tense.txt:
+ACCURACY TOP5: 0.06% (1/1560)
+gram8-plural.txt:
+ACCURACY TOP5: 5.03% (67/1332)
+gram9-plural-verbs.txt:
+ACCURACY TOP5: 0.00% (0/870)
+Questions seen/total: 91.21% (17827/19544)
+Semantic accuracy: 56.59%  (4197/7416)
+Syntactic accuracy: 4.12%  (429/10411)
+Total accuracy: 25.95%  (4626/17827)
+evaluating normalized vector
+capital-common-countries.txt:
+ACCURACY TOP5: 78.46% (397/506)
+capital-world.txt:
+ACCURACY TOP5: 44.30% (1579/3564)
+currency.txt:
+ACCURACY TOP5: 8.22% (49/596)
+city-in-state.txt:
+ACCURACY TOP5: 46.18% (1076/2330)
+family.txt:
+ACCURACY TOP5: 60.71% (255/420)
+gram1-adjective-to-adverb.txt:
+ACCURACY TOP5: 10.99% (109/992)
+gram2-opposite.txt:
+ACCURACY TOP5: 7.14% (54/756)
+gram3-comparative.txt:
+ACCURACY TOP5: 50.08% (667/1332)
+gram4-superlative.txt:
+ACCURACY TOP5: 16.73% (166/992)
+gram5-present-participle.txt:
+ACCURACY TOP5: 29.17% (308/1056)
+gram6-nationality-adjective.txt:
+ACCURACY TOP5: 78.17% (1189/1521)
+gram7-past-tense.txt:
+ACCURACY TOP5: 26.60% (415/1560)
+gram8-plural.txt:
+ACCURACY TOP5: 42.57% (567/1332)
+gram9-plural-verbs.txt:
+ACCURACY TOP5: 16.55% (144/870)
+Questions seen/total: 91.21% (17827/19544)
+Semantic accuracy: 45.25%  (3356/7416)
+Syntactic accuracy: 34.76%  (3619/10411)
+Total accuracy: 39.13%  (6975/17827)

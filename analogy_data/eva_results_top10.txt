@@ -1,0 +1,69 @@
+(71290, 'words found')
+0 words neglected
+('vector dimension', 50)
+evaluating cooc matrix
+capital-common-countries.txt:
+ACCURACY TOP10: 77.87% (394/506)
+capital-world.txt:
+ACCURACY TOP10: 84.88% (3025/3564)
+currency.txt:
+ACCURACY TOP10: 0.00% (0/596)
+city-in-state.txt:
+ACCURACY TOP10: 86.61% (2018/2330)
+family.txt:
+ACCURACY TOP10: 19.52% (82/420)
+gram1-adjective-to-adverb.txt:
+ACCURACY TOP10: 0.00% (0/992)
+gram2-opposite.txt:
+ACCURACY TOP10: 3.44% (26/756)
+gram3-comparative.txt:
+ACCURACY TOP10: 0.08% (1/1332)
+gram4-superlative.txt:
+ACCURACY TOP10: 0.00% (0/992)
+gram5-present-participle.txt:
+ACCURACY TOP10: 0.19% (2/1056)
+gram6-nationality-adjective.txt:
+ACCURACY TOP10: 38.13% (580/1521)
+gram7-past-tense.txt:
+ACCURACY TOP10: 0.64% (10/1560)
+gram8-plural.txt:
+ACCURACY TOP10: 7.81% (104/1332)
+gram9-plural-verbs.txt:
+ACCURACY TOP10: 0.00% (0/870)
+Questions seen/total: 91.21% (17827/19544)
+Semantic accuracy: 74.42%  (5519/7416)
+Syntactic accuracy: 6.94%  (723/10411)
+Total accuracy: 35.01%  (6242/17827)
+evaluating normalized vector
+capital-common-countries.txt:
+ACCURACY TOP10: 87.35% (442/506)
+capital-world.txt:
+ACCURACY TOP10: 52.24% (1862/3564)
+currency.txt:
+ACCURACY TOP10: 10.23% (61/596)
+city-in-state.txt:
+ACCURACY TOP10: 54.33% (1266/2330)
+family.txt:
+ACCURACY TOP10: 66.67% (280/420)
+gram1-adjective-to-adverb.txt:
+ACCURACY TOP10: 14.72% (146/992)
+gram2-opposite.txt:
+ACCURACY TOP10: 10.05% (76/756)
+gram3-comparative.txt:
+ACCURACY TOP10: 60.51% (806/1332)
+gram4-superlative.txt:
+ACCURACY TOP10: 21.67% (215/992)
+gram5-present-participle.txt:
+ACCURACY TOP10: 36.27% (383/1056)
+gram6-nationality-adjective.txt:
+ACCURACY TOP10: 83.43% (1269/1521)
+gram7-past-tense.txt:
+ACCURACY TOP10: 32.24% (503/1560)
+gram8-plural.txt:
+ACCURACY TOP10: 48.87% (651/1332)
+gram9-plural-verbs.txt:
+ACCURACY TOP10: 22.30% (194/870)
+Questions seen/total: 91.21% (17827/19544)
+Semantic accuracy: 52.74%  (3911/7416)
+Syntactic accuracy: 40.75%  (4243/10411)
+Total accuracy: 45.74%  (8154/17827)
