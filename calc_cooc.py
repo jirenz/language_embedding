@@ -6,6 +6,7 @@ import numpy as np
 from utils import default_gram_length
 from helper import get_wordnet_info
 from helper import interval_intersect
+from helper import get_pos_tags
 
 """
 calc_cooccurence(fragment, all_grams) is a function that will calculate the coocccurence matrix
@@ -26,7 +27,7 @@ window_size = 10
 gram_length = default_gram_length
 
 def get_label(l, r, fragment, all_grams):
-	#	Return the list of labels of grams [l, r]; return [] if not found (at most 2 for single word, at most 1 for others)
+	#	Return the list of labels of grams [l, r]; return [] if not found (at most 1 for non-synsets)
 	# 	It is guaranteed that (l - window_size) and (r + window_size) are in the range
 	result = []
 	if l == r:
@@ -36,17 +37,30 @@ def get_label(l, r, fragment, all_grams):
 			result.append(label)
 		except KeyError:
 			pass
-		# TODO: synset
+
+		context = fragment[max(0, l - window_size): min(r + window_size + 1, len(fragment) - 1)]
+		tags = get_pos_tags(context) # TODO: only need to calculate once
+		wordnet_info = get_wordnet_info(window_size, context, tags)
+		if wordnet_info is not None:
+			for key, var in wordnet_info.iteritems():
+				for ss in var:
+					result.append(ss.offset() + synset_global_offset)
 	else:
 		#	can only appear in all_grams
-		gram_string = " ".join(fragment[l:r + 1])
+		gram_string = " ".join(fragment[l: r + 1])
 		try:
 			label = all_grams[gram_string][0]
 			result.append(label)
 		except KeyError:
 			pass
-	return result
+	return tuple(result)
 
+def inc_coocurrence(Dict, label_1, label_2):
+	if label_1 > label_2: label_1, label_2 = label_2, label_1
+	try:
+		Dict[(label_1, label_2)] += 1
+	except KeyError:
+		Dict[(label_1, label_2)] = 1
 
 def calc_cooccurence(fragment, all_grams):
 	result = {}
@@ -56,14 +70,53 @@ def calc_cooccurence(fragment, all_grams):
 	#	It filters out those n-grams that in neither all_grams nor wordnet
 	#	We need to check interval intersections
 
-	center = window_size
+	N = len(fragment)
 	for l in range(window_size * 2 + 1):
 		for length in range(1, 4):
 			r = l + length - 1
 			if r > window_size * 2 + 1: continue
-			if len(get_label(l, r, fragment, all_grams)) > 0:
-				candidates.add((l, r))
-	for 
-
-
+			labels = get_label(l, r, fragment, all_grams)
+			if len(labels) > 0:
+				candidates.add((l, r, labels))
+	for l in range(window_size, N - gram_length - window_size):
+		for length in range(1, 4):
+			r = l + length - 1
+			labels = get_label(l, r, fragment, all_grams)
+			if len(labels) > 0:
+				for candidate in candidates:
+					#	check candidates and add them to result
+					if not interval_intersect(l, r, candidate[0], candidate[1]):
+						for label_1 in labels:
+							for label_2 in candidate[2]:
+								inc_coocurrence(result, label_1, label_2)
+		#	update candidates set
+		to_remove = []
+		for x in candidates:
+			if x[0] == l - window_size:
+				to_remove.append(x)
+		for x in to_remove:
+			candidates.remove(x)
+		new_r = l + window_size + 1
+		for length in range(1, 4):
+			new_l = new_r - length + 1
+			labels = get_label(new_l, new_r, fragment, all_grams)
+			if len(labels) > 0:
+				candidates.add((new_l, new_r, labels))
 	return result
+
+
+fragment = "your head look like a ball however hubert has a head which is a polygon this difference derives from the fact that hubert is gamma perturbation stable"
+fragment = fragment.split(" ")
+all_grams = {}
+counter = 0
+for word in fragment:
+	all_grams[word] = (counter, 0)
+	counter += 1
+all_grams["your head"] = (counter, 0)
+counter += 1
+all_grams["a ball"] = (counter, 0)
+counter += 1
+all_grams["derives from"] = (counter, 0)
+counter += 1
+result = calc_cooccurence(fragment, all_grams)
+print result

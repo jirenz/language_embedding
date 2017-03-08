@@ -6,6 +6,8 @@ import numpy as np
 from nltk.corpus import wordnet as wn
 from nltk.wsd import lesk
 from nltk.stem import WordNetLemmatizer
+from nltk import pos_tag
+from nltk.corpus import wordnet
 
 #	This helper function loads a given json file and combine it to the
 #	current dictionary. The resulting dictionary can be quite huge.
@@ -89,30 +91,62 @@ def mkdir_p(path):
 		# else:
 		# 	raise
 
-st = WordNetLemmatizer()
-def get_wordnet_info(word, context, config):
-	#	word: single_word string
+def get_pos_tags(sentence):
+	return [tag for word, tag in pos_tag(sentence)]
+
+# st = WordNetLemmatizer()
+def get_wordnet_info(index, context, context_pos): #, config):
+	#	index: center index in context
 	#	context: list of single_word strings
-	#	config: Dict of configurations
+	#	contex_pos: list of pos tags for context
+	#	config: Dict of configurations Not in use right now
 	#	return: Dict of infos about word
 	result = {}
-	ss = lesk(context, word)
+	word = context[index]
+	pos = get_wordnet_pos(context_pos[index])
+	ss = lesk(context, word, pos=pos) # TODO: Apply smoothing
+	# No need to lemmatize here because it is called implictly
+	# if ss is None:
+	# 	print "using lemmatizer"
+	# 	word = st.lemmatize(word)
+	# 	ss = lesk(context, word)
 	if ss is None:
-		word = st.lemmatize(word)
-		ss = lesk(context, word)
-	if ss is None:
-		return result
+		return None
+	result['ss'] = [ss]
 
-	neighbors = [] # neighbors should be a list of Synset objects
-	neighbors.extend(ss.hypernyms())
-	neighbors.extend(ss.similar_tos())
-	neighbors.extend(ss.also_sees())
-	result['neighbors'] = neighbors
+	hypernyms = ss.hypernyms()
+	if len(hypernyms) > 0:
+		result['hypernyms'] = hypernyms
 
+	similar_tos = ss.similar_tos()
+	if len(similar_tos) > 0:
+		result['similar_tos'] = similar_tos
+
+	also_sees = ss.also_sees()
+	if len(also_sees) > 0:
+		result['also_sees'] = also_sees
+	# neighbors = [] # neighbors should be a list of Synset objects
+	# neighbors.extend(ss.hypernyms())
+	# neighbors.extend(ss.similar_tos())
+	# neighbors.extend(ss.also_sees())
+	# result['neighbors'] = neighbors
 	return result
 
 def interval_intersect(l1, r1, l2, r2):
 	# interval [l1, r1] and [l2, r2]
-	if r1 < l2: return True
-	if l1 > r2: return True
-	return False
+	if r1 < l2: return False
+	if l1 > r2: return False
+	return True
+
+# http://stackoverflow.com/questions/15586721/wordnet-lemmatization-and-pos-tagging-in-python?noredirect=1&lq=1
+def get_wordnet_pos(treebank_tag):
+    if treebank_tag.startswith('J'):
+        return wordnet.ADJ
+    elif treebank_tag.startswith('V'):
+        return wordnet.VERB
+    elif treebank_tag.startswith('N'):
+        return wordnet.NOUN
+    elif treebank_tag.startswith('R'):
+        return wordnet.ADV
+    else:
+        return ''
