@@ -4,22 +4,21 @@ from nltk.stem.snowball import SnowballStemmer
 import sys
 import os
 import nltk
-print(nltk.pos_tag('What is the airspeed of an unladen swallow ?'.split()))
+# print(nltk.pos_tag('What is the airspeed of an unladen swallow ?'.split()))
 
-exit(0)
+# exit(0)
 
-counter = 0
-for ss in list(wn.all_synsets('v')):
-	if len(ss.entailments()) != 0:
-		print ss
-		print ss.entailments()
-		counter += 1
-		if counter > 3:
-			exit(0)
+# counter = 0
+# for ss in list(wn.all_synsets('v')):
+# 	if len(ss.entailments()) != 0:
+# 		print ss
+# 		print ss.entailments()
+# 		counter += 1
+# 		if counter > 3:
+# 			exit(0)
 	
-print "No entailments in ", counter
+# print "No entailments in ", counter
 
-from nltk.corpus import wordnet as wn
 
 # def is_noun(tag):
 #     return tag in ['NN', 'NNS', 'NNP', 'NNPS']
