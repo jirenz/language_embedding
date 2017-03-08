@@ -3,7 +3,9 @@ import random
 import json
 import re
 import numpy as np
-
+from nltk.corpus import wordnet as wn
+from nltk.wsd import lesk
+from nltk.stem import WordNetLemmatizer
 
 #	This helper function loads a given json file and combine it to the
 #	current dictionary. The resulting dictionary can be quite huge.
@@ -86,3 +88,25 @@ def mkdir_p(path):
 		# 	pass
 		# else:
 		# 	raise
+
+st = WordNetLemmatizer()
+def get_wordnet_info(word, context, config):
+	#	word: single_word string
+	#	context: list of single_word strings
+	#	config: Dict of configurations
+	#	return: Dict of infos about word
+	result = {}
+	ss = lesk(context, word)
+	if ss is None:
+		word = st.lemmatize(word)
+		ss = lesk(context, word)
+	if ss is None:
+		return result
+
+	neighbors = [] # neighbors should be a list of Synset objects
+	neighbors.extend(ss.hypernyms())
+	neighbors.extend(ss.similar_tos())
+	neighbors.extend(ss.also_sees())
+	result['neighbors'] = neighbors
+
+	return result
