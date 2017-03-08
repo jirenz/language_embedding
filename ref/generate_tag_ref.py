@@ -3,6 +3,6 @@ from nltk.data import load
 tagdict = load('help/tagsets/upenn_tagset.pickle')
 print tagdict.keys()
 # ['PRP$', 'VBG', 'VBD', '``', 'VBN', ',', "''", 'VBP', 'WDT', ...
-with open('treebank_tags_table.ref', 'w') as f:
+with open('treebank_tag_table.ref', 'w') as f:
 	for index, tag in enumerate(tagdict.keys()):
 		f.write('{},{}\n'.format(index, tag))

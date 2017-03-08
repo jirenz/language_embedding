@@ -39,7 +39,7 @@ def worker_task(files, args, worker_id):
 							exit(0)
 					text = []
 					continue
-					featurizer.featurize(word_tokenize(filter_with_alphabet(sanitize_line(line), args.alphabet)))
+				print featurizer.featurize(word_tokenize(filter_with_alphabet(sanitize_line(line), args.alphabet)))
 				# F_out.write(str(featurizer.featurize(word_tokenize(filter_with_alphabet(sanitize_line(line), args.alphabet)))))
 				# text.extend()
 			F_out.close()
