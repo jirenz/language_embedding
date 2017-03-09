@@ -37,6 +37,12 @@ def process(text, featurizer, cooc, window_size):
 						inc_coocurrence(cooc, token_1["val"], token_2["val"], token_1.get("w", 1.) * token_2.get("w", 1.) / (center - l))
 	return N
 
+def dump_to_file(worker_id, cooc, F_out):
+	sys.stdout.write("{}: Dumping {} entries\n".format(worker_id, len(cooc)))
+	for key, val in cooc.iteritems():
+		word1, word2 = key
+		coocformatter.write_CREC(F_out, word1, word2, val)
+	return
 
 def worker_task(files, args, worker_id):
 	featurizer = Featurizer(Settings())
@@ -61,15 +67,14 @@ def worker_task(files, args, worker_id):
 					text = []
 					Counter += 1
 					if Counter%200 == 0:
-						sys.stdout.write("{}: Dumping {} entries\n".format(worker_id, len(cooc)))
-						for key, val in cooc.iteritems():
-							word1, word2 = key
-							coocformatter.write_CREC(F_out, word1, word2, val)
+						dump_to_file(worker_id, cooc, F_out)
 						cooc = {}
 					if Counter % 5000 == 0:
 						sys.stdout.write("{}: Finished processing article:{}\n".format(worker_id, Counter))
 					continue
 				text.append(line)
+		dump_to_file(worker_id, cooc, F_out)
+		cooc = {}
 		F_out.close()
 		sys.stdout.write("{}: Finished processing file:{}: {} tokens, {} entries found\n".format(worker_id, inputfile, tokens_count, len(cooc)))
 		file_count += 1
