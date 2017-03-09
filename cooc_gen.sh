@@ -7,7 +7,7 @@ export SIGNAL_FILE=.created_at.txt
 ARTICLE_PATH=$DATA_PATH/wiki_articles/AA
 COOC_PATH=$DATA_PATH/enriched_cooc
 OUTPUT_PATH=$DATA_PATH/enriched_glove
-COOCCURRENCE_SHUF_FILE=$OUTPUT_PATH/cooc.suff.bin
+COOCCURRENCE_SHUF_FILE=$OUTPUT_PATH/cooc.shuff.bin
 VOCAB_FILE=$OUTPUT_PATH/vocab.txt
 
 NUM_WORKERS=3
@@ -22,6 +22,8 @@ MAX_ITER=25
 VECTOR_SIZE=100
 BINARY=2
 VERBOSE=2
+
+BUILDDIR=glove/build/
 
 if [ ! -e $VOCAB_FILE ]; then
 	echo "$ mkdir -pv $OUTPUT_PATH"
@@ -40,7 +42,7 @@ if [ ! -e $COOC_PATH/$SIGNAL_FILE ]; then
 	mkdir -pv $COOC_PATH
 	echo "$ find $ARTICLE_PATH/wiki_0* 2>>log.txt | xargs python chunked_cooc.py -o $COOC_PATH --cores $NUM_WORKERS"
 	# find $ARTICLE_PATH/wiki_0* 2>>log.txt | xargs python chunked_cooc.py -o $COOC_PATH --cores $NUM_WORKERS
-	python chunked_cooc.py -o $COOC_PATH --cores $NUM_WORKERS $ARTICLE_PATH/wiki_00 $ARTICLE_PATH/wiki_01 $ARTICLE_PATH/wiki_02 # $ARTICLE_PATH/wiki_03 $ARTICLE_PATH/wiki_04 $ARTICLE_PATH/wiki_05
+	# python chunked_cooc.py -o $COOC_PATH --cores $NUM_WORKERS $ARTICLE_PATH/wiki_00 $ARTICLE_PATH/wiki_01 $ARTICLE_PATH/wiki_02
 	if [ $? -eq 0 ]; then
 		echo successfully counted cooccurrence by chunk
 	else
@@ -53,7 +55,7 @@ if [ ! -e $COOCCURRENCE_SHUF_FILE ]; then
 	mkdir -pv $OUTPUT_PATH
 	echo "$ find $COOC_PATH/wiki_0* 2>>log.txt | xargs python cooc_reduce.py -o $COOCCURRENCE_SHUF_FILE"
 	# find $COOC_PATH/wiki_0* 2>>log.txt | xargs python cooc_reduce.py -o $COOCCURRENCE_SHUF_FILE
-	find $COOC_PATH/wiki_0* 2>>log.txt | xargs python cooc_reduce.py -o $COOCCURRENCE_SHUF_FILE
+	# find $COOC_PATH/wiki_0* 2>>log.txt | xargs python cooc_reduce.py -o $COOCCURRENCE_SHUF_FILE
 	if [ $? -eq 0 ]; then
 		echo successfully collected cooccurrence
 	else

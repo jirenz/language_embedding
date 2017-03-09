@@ -57,6 +57,7 @@ def worker_task(files, args, worker_id):
 		sys.stdout.write("{}: Processing file:{}\n".format(worker_id, inputfile))
 		with open(inputfile, "r") as F:
 			text = []
+			chars = 0
 			# All articles begin with '<doc' and end with '</doc>'
 			for line in F:
 				if line.startswith("<doc"):
@@ -65,13 +66,19 @@ def worker_task(files, args, worker_id):
 					# some paragraph ends
 					tokens_count += process(" ".join(text), featurizer, cooc, args.window_size)
 					text = []
+					chars = 0
 					Counter += 1
-					if Counter % 5000 == 0:
+					if Counter % 500 == 0:
 						sys.stdout.write("{}: Finished processing article:{}\n".format(worker_id, Counter))
 						dump_to_file(worker_id, cooc, F_out)
 						cooc = {}
 					continue
-				text.append(line)
+				text.append(line) # Cannot be longer than 100000
+				chars += len(line)
+				if chars > 10000:
+					tokens_count += process(" ".join(text), featurizer, cooc, args.window_size)
+					text = []
+					chars = 0
 		dump_to_file(worker_id, cooc, F_out)
 		cooc = {}
 		F_out.close()
@@ -93,7 +100,7 @@ if __name__ == "__main__":
 
 	workers = []
 
-	files_per_worker = int(len(args.inputfiles) / (1. * args.cores)) + 1
+	files_per_worker = int(len(args.inputfiles) / (1. * args.cores))
 	sys.stdout.write("{} files per worker\n".format(files_per_worker))
 	for i in range(0, len(args.inputfiles), files_per_worker):
 		end = i + files_per_worker

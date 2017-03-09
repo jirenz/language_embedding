@@ -284,10 +284,14 @@ class Featurizer():
 		pos = []
 		# ner = []
 		# lemma = []
-		for sentence in output['sentences']:
-			for token in sentence['tokens']:
-				fragment.append(token['word'])
-				pos.append(token['pos'])
+		try:
+			for sentence in output['sentences']:
+				for token in sentence['tokens']:
+					fragment.append(token['word'])
+					pos.append(token['pos'])
+		except:
+			print "malformed output: ", output, '\n',
+			return []
 		features = [[] for token in fragment]
 		self.get_feature_pos(fragment, pos, features)
 		self.get_feature_gram(fragment, features)
