@@ -65,28 +65,29 @@ class FeatureLabeler():
 			to_label[from_label[key]] = key
 		return from_label, to_label
 
-	def load_labels(self, tag_file=None, synset_file=None, gram_file=None, ner_file=None):
+	def load_labels(self, tag_file=None, synset_file=None, gram_file=None):#, ner_file=None):
 		if tag_file is None:
 			tag_file = tag_ref_file
 		if synset_file is None:
 			synset_file = synset_ref_file
 		if gram_file is None:
 			gram_file = gram_ref_file
-		if ner_file is None:
-			ner_file = ner_ref_file
+		# if ner_file is None:
+		# 	ner_file = ner_ref_file
 
 		self.label_to_tag, self.tag_to_label = self.read_ref(tag_file)
 		self.label_to_synset, self.synset_to_label = self.read_ref(synset_file)
 		self.label_to_gram, self.gram_to_label = self.read_ref(gram_file)
-		self.label_to_ner, self.ner_to_label = self.read_ref(ner_file)
+		# self.label_to_ner, self.ner_to_label = self.read_ref(ner_file)
 		
 		self.gram_offset = 1 # GLOVE cooc is 1 indexed
 		self.synset_offset = self.gram_offset + len(self.label_to_gram)
 		self.tag_offset = self.synset_offset + len(self.label_to_synset)
-		self.ner_offset = self.tag_offset + len(self.label_to_tag)
+		# self.ner_offset = self.tag_offset + len(self.label_to_tag)
 
 		self.minimum = 1
-		self.maximum = self.ner_offset + len(self.label_to_ner)
+		self.maximum = self.tag_offset
+		# self.maximum = self.ner_offset + len(self.label_to_ner)
 		print "labeler loaded {} labels".format(self.maximum - self.minimum)
 		return
 
@@ -108,12 +109,12 @@ class FeatureLabeler():
 		except KeyError:
 			return -1
 
-	def ner_val(self, ner_string):
-		try:
-			return self.ner_to_label[ner_string] + self.ner_offset
-		except KeyError:
-			print "ner error"
-			return -1
+	# def ner_val(self, ner_string):
+	# 	try:
+	# 		return self.ner_to_label[ner_string] + self.ner_offset
+	# 	except KeyError:
+	# 		print "ner error"
+	# 		return -1
 
 	def val_to_feature(self, val):
 		if val < self.minimum:
@@ -122,10 +123,10 @@ class FeatureLabeler():
 			return self.label_to_gram[val - self.gram_offset], 'gram'
 		elif val < self.tag_offset:
 			return self.label_to_synset[val - self.synset_offset], 'ss'
-		elif val < self.ner_offset:
-			return self.label_to_tag[val - self.tag_offset], 'pos'
 		elif val < self.maximum:
-			return self.label_to_ner[val - self.ner_offset], 'ner'
+			return self.label_to_tag[val - self.tag_offset], 'pos'
+		# elif val < self.maximum:
+		# 	return self.label_to_ner[val - self.ner_offset], 'ner'
 
 	def generate_vocab_file(self, path):
 		print "writing vocabulary to {}".format(path)
@@ -138,19 +139,19 @@ class FeatureLabeler():
 				f.write('ss_{} 1\n'.format(description))
 			if fea_type == 'pos':
 				f.write('pos_{} 1\n'.format(description))
-			if fea_type == 'ner':
-				f.write('ner_{} 1\n'.format(description))
+			# if fea_type == 'ner':
+			# 	f.write('ner_{} 1\n'.format(description))
 		f.close()
 
 class Featurizer():
-	def __init__(self, settings=None, labeler=None, port=9000):
+	def __init__(self, settings=None, labeler=None):
 		if settings is None:
 			settings = Settings()
 		if labeler is None:
 			labeler = FeatureLabeler()
 		self.settings = settings
 		self.labeler = labeler
-		self.nlp = StanfordCoreNLP('http://localhost:' + str(port))
+		self.nlp = StanfordCoreNLP('http://localhost:9000')
 		#  self.nlp = spacy.load('en')               # You are here.
 
 	def get_feature_pos(self, fragment, tagged, features):	
@@ -247,25 +248,25 @@ class Featurizer():
 			# 	features[index].append(also_ss_feature)
 			# 	continue
 
-			# for hyper_ss in hypernyms:
-			# 	hyper_ss_feature = self.get_feature_synset(hyper_ss, index)
-			# 	hyper_ss_feature['t+'] = 'hyper'
-			# 	hyper_ss_feature['w'] = self.settings.ss_weight['hyper'] / len(hypernyms)
-			# 	features[index].append(hyper_ss_feature)
+			for hyper_ss in hypernyms:
+				hyper_ss_feature = self.get_feature_synset(hyper_ss, index)
+				hyper_ss_feature['t+'] = 'hyper'
+				hyper_ss_feature['w'] = self.settings.ss_weight['hyper'] / len(hypernyms)
+				features[index].append(hyper_ss_feature)
 
-			# similar_tos = ss.similar_tos()
-			# for similar_ss in similar_tos:
-			# 	similar_ss_feature = self.get_feature_synset(similar_ss, index)
-			# 	similar_ss_feature['t+'] = 'sim'
-			# 	similar_ss_feature['w'] = self.settings.ss_weight['sim'] / len(similar_tos)
-			# 	features[index].append(similar_ss_feature)
+			similar_tos = ss.similar_tos()
+			for similar_ss in similar_tos:
+				similar_ss_feature = self.get_feature_synset(similar_ss, index)
+				similar_ss_feature['t+'] = 'sim'
+				similar_ss_feature['w'] = self.settings.ss_weight['sim'] / len(similar_tos)
+				features[index].append(similar_ss_feature)
 
-			# also_sees = ss.also_sees()
-			# for also_ss in also_sees:
-			# 	also_ss_feature = self.get_feature_synset(also_ss, index)
-			# 	also_ss_feature['t+'] = 'also'
-			# 	also_ss_feature['w'] = self.settings.ss_weight['also'] / len(also_sees)
-			# 	features[index].append(also_ss_feature)
+			also_sees = ss.also_sees()
+			for also_ss in also_sees:
+				also_ss_feature = self.get_feature_synset(also_ss, index)
+				also_ss_feature['t+'] = 'also'
+				also_ss_feature['w'] = self.settings.ss_weight['also'] / len(also_sees)
+				features[index].append(also_ss_feature)
 		return
 
 	'''

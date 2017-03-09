@@ -10,6 +10,7 @@ OUTPUT_PATH=$DATA_PATH/enriched_glove
 COOCCURRENCE_SHUF_FILE=$OUTPUT_PATH/cooc.suff.bin
 VOCAB_FILE=$OUTPUT_PATH/vocab.txt
 
+NUM_WORKERS=3
 NUM_THREADS=6
 
 X_MAX=100
@@ -37,8 +38,8 @@ fi
 if [ ! -e $COOC_PATH/$SIGNAL_FILE ]; then
 	echo "$ mkdir -pv $COOC_PATH"
 	mkdir -pv $COOC_PATH
-	echo "$ find $ARTICLE_PATH/wiki* 2>>log.txt | xargs python chunked_cooc.py -o $COOC_PATH -c $NUM_THREADS"
-	find $ARTICLE_PATH/wiki* 2>>log.txt | xargs python chunked_cooc.py -o $COOC_PATH -c $NUM_THREADS
+	echo "$ find $ARTICLE_PATH/wiki_0* 2>>log.txt | xargs python chunked_cooc.py -o $COOC_PATH --cores $NUM_WORKERS"
+	find $ARTICLE_PATH/wiki* 2>>log.txt | xargs python chunked_cooc.py -o $COOC_PATH --cores $NUM_WORKERS
 	if [ $? -eq 0 ]; then
 		echo successfully counted cooccurrence by chunk
 	else
@@ -49,7 +50,7 @@ fi
 if [ ! -e $COOCCURRENCE_SHUF_FILE ]; then
 	echo "$ mkdir -pv $OUTPUT_PATH"
 	mkdir -pv $OUTPUT_PATH
-	echo "$ find $COOC_PATH/wiki* 2>>log.txt | xargs python cooc_reduce.py -o $COOCCURRENCE_SHUF_FILE"
+	echo "$ find $COOC_PATH/wiki_0* 2>>log.txt | xargs python cooc_reduce.py -o $COOCCURRENCE_SHUF_FILE"
 	find $COOC_PATH/wiki* 2>>log.txt | xargs python cooc_reduce.py -o $COOCCURRENCE_SHUF_FILE
 	if [ $? -eq 0 ]; then
 		echo successfully collected cooccurrence
