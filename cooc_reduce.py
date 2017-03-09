@@ -34,8 +34,12 @@ for inputfile in args.inputfiles:
 				break
 			try:
 				all_grams[(word1, word2)] += val
-			except KeyError as e:
+			except KeyError:
 				all_grams[(word1, word2)] = val
+			try:
+				all_grams[(word2, word1)] += val
+			except KeyError:
+				all_grams[(word2, word1)] = val
 	print "Processed ", counter, " files: ", len(cooc), "records found"
 	randomly_ordered_keys = random.sample(cooc.keys, len(cooc))
 	with open(outputfile, 'wb') as outfile:

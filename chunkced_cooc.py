@@ -13,9 +13,18 @@ from helper import sanitize_line
 from helper import write_checkpoint_file
 import coocformatter
 
+
+def inc_coocurrence(Dict, label_1, label_2, value):
+	if label_1 < 0 or label_2 < 0:
+		return
+	if label_1 > label_2: label_1, label_2 = label_2, label_1
+	try:
+		Dict[(label_1, label_2)] += value
+	except KeyError:
+		Dict[(label_1, label_2)] = value
+
 def process(text, featurizer, cooc):
 	features = featurizer.featurize(text)
-
 	N = len(features)
 	for center in range(window_size, N):
 		# only consider left half, notice that the result matrix is upper-right only
