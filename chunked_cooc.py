@@ -91,8 +91,6 @@ if __name__ == "__main__":
 	print args
 	print len(args.inputfiles), "files found."
 
-	worker_task(args.inputfiles, args, 0)
-	exit(-1)
 	workers = []
 
 	files_per_worker = int(len(args.inputfiles) / (1. * args.cores)) + 1
