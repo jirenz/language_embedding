@@ -35,7 +35,7 @@ def process(text, featurizer, cooc, window_size):
 				for token_2 in l_list:
 					if not interval_intersect(token_1["l"], token_1["r"], token_2["l"], token_2["r"]):
 						inc_coocurrence(cooc, token_1["val"], token_2["val"], token_1.get("w", 1.) * token_2.get("w", 1.) / (center - l))
-	return
+	return N
 
 
 def worker_task(files, args, worker_id):
@@ -45,6 +45,9 @@ def worker_task(files, args, worker_id):
 	file_count = 0
 	text = []
 	for inputfile in files:
+		tokens_count = 0
+		file_name, _ = splitext(basename(inputfile))
+		F_out = open(join(args.outputpath, file_name + ".cooc_chunked"), 'wb')
 		sys.stdout.write("{}: Processing file:{}\n".format(worker_id, inputfile))
 		with open(inputfile, "r") as F:
 			text = []
@@ -54,20 +57,21 @@ def worker_task(files, args, worker_id):
 					continue
 				if line.startswith("</doc>"):
 					# some paragraph ends
-					process(text, featurizer, cooc, args.window_size)
+					tokens_count += process(" ".join(text), featurizer, cooc, args.window_size)
 					text = []
 					Counter += 1
+					if Counter%200 == 0:
+						sys.stdout.write("{}: Dumping {} entries\n".format(worker_id, len(cooc)))
+						for key, val in cooc.iteritems():
+							word1, word2 = key
+							coocformatter.write_CREC(F_out, word1, word2, val)
+						cooc = {}
 					if Counter % 5000 == 0:
 						sys.stdout.write("{}: Finished processing article:{}\n".format(worker_id, Counter))
 					continue
-				text.extend(word_tokenize(filter_with_alphabet(sanitize_line(line), args.alphabet)))
-		file_name, _ = splitext(basename(inputfile))
-		with open(join(args.outputpath, file_name + ".cooc_chunked"), 'wb') as F:
-			for key, val in cooc.iteritems():
-				word1, word2 = key
-				coocformatter.write_CREC(F, word1, word2, val)
-
-		sys.stdout.write("{}: Finished processing file:{}: {} entries found\n".format(worker_id, inputfile, len(cooc)))
+				text.append(line)
+		F_out.close()
+		sys.stdout.write("{}: Finished processing file:{}: {} tokens, {} entries found\n".format(worker_id, inputfile, tokens_count, len(cooc)))
 		file_count += 1
 	
 if __name__ == "__main__":
@@ -75,30 +79,31 @@ if __name__ == "__main__":
 	parser.add_argument('inputfiles', metavar='path', type=str, nargs='+',
 						help='files to be processed')
 	parser.add_argument('-o', '--outputpath', default='./', type=str, help='output path')
-	parser.add_argument('--cores', default=6, type=int, help='number of concurrent threads')
-	parser.add_argument('--window_size', default=20, type=int, help='number of concurrent threads')
+	parser.add_argument('--cores', default=1, type=int, help='number of concurrent threads')
+	parser.add_argument('--window_size', default=6, type=int, help='window size for cooccurrence')
 	parser.add_argument('-a', '--alphabet', default='abcdefghijklmnopqrstuvwxyz -',
 		 type=str, help='supported alphabet')
 	args = parser.parse_args()
 	print args
 	print len(args.inputfiles), "files found."
 
+	worker_task(args.inputfiles, args, 0)
 	workers = []
 
-	files_per_worker = int(len(args.inputfiles) / (1. * args.cores)) + 1
-	sys.stdout.write("{} files per worker\n".format(files_per_worker))
-	for i in range(0, len(args.inputfiles), files_per_worker):
-		end = i + files_per_worker
-		if end > len(args.inputfiles):
-			end = len(args.inputfiles)
-		files_for_worker = args.inputfiles[i:end]
-		p = Process(target=worker_task, args=(files_for_worker, args, i / files_per_worker))
-		p.start()
-		workers.append(p)
-	for idx, worker in enumerate(workers):
-		worker.join()
-		sys.stdout.write("{}: Exited with code {}\n".format(idx, worker.exitcode))
-		if worker.exitcode != 0:
-			exit(1)
+	# files_per_worker = int(len(args.inputfiles) / (1. * args.cores)) + 1
+	# sys.stdout.write("{} files per worker\n".format(files_per_worker))
+	# for i in range(0, len(args.inputfiles), files_per_worker):
+	# 	end = i + files_per_worker
+	# 	if end > len(args.inputfiles):
+	# 		end = len(args.inputfiles)
+	# 	files_for_worker = args.inputfiles[i:end]
+	# 	p = Process(target=worker_task, args=(files_for_worker, args, i / files_per_worker))
+	# 	p.start()
+	# 	workers.append(p)
+	# for idx, worker in enumerate(workers):
+	# 	worker.join()
+	# 	sys.stdout.write("{}: Exited with code {}\n".format(idx, worker.exitcode))
+	# 	if worker.exitcode != 0:
+	# 		exit(1)
 
 	write_checkpoint_file(args.outputpath)
