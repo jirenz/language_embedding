@@ -23,6 +23,8 @@ BINARY=2
 VERBOSE=2
 
 if [ ! -e $VOCAB_FILE ]; then
+	echo "$ mkdir -pv $OUTPUT_PATH"
+	mkdir -pv $OUTPUT_PATH
 	echo "$ python generate_vocab.py $VOCAB_FILE"
 	python generate_vocab.py $VOCAB_FILE
 	if [ $? -eq 0 ]; then
