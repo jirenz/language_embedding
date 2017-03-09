@@ -1,5 +1,5 @@
 from utils import default_gram_length
-from utils import tag_ref_file, synset_ref_file, gram_ref_file, ner_ref_file
+from utils import tag_ref_file, synset_ref_file, gram_ref_file #, ner_ref_file
 from helper import get_wordnet_info
 from helper import get_pos_tags
 from helper import get_wordnet_pos
@@ -143,14 +143,14 @@ class FeatureLabeler():
 		f.close()
 
 class Featurizer():
-	def __init__(self, settings=None, labeler=None):
+	def __init__(self, settings=None, labeler=None, port=9000):
 		if settings is None:
 			settings = Settings()
 		if labeler is None:
 			labeler = FeatureLabeler()
 		self.settings = settings
 		self.labeler = labeler
-		self.nlp = StanfordCoreNLP('http://localhost:9000')
+		self.nlp = StanfordCoreNLP('http://localhost:' + str(port))
 		#  self.nlp = spacy.load('en')               # You are here.
 
 	def get_feature_pos(self, fragment, tagged, features):	
@@ -222,7 +222,7 @@ class Featurizer():
 			ss_feature['w'] = self.settings.ss_weight['self'] # TODO: Apply smoothing
 			features[index].append(ss_feature)
 
-			# # we restrict number of other synsets to be three
+			# we restrict number of other synsets to be three
 			# hypernyms = ss.hypernyms()
 			# if len(hypernyms) > 0:
 			# 	hyper_ss = hypernyms[random.randint(0, len(hypernyms) - 1)]
@@ -245,7 +245,7 @@ class Featurizer():
 			# 	also_ss_feature = self.get_feature_synset(also_ss, index)
 			# 	also_ss_feature['t+'] = 'also'
 			# 	features[index].append(also_ss_feature)
-
+			# 	continue
 
 			# for hyper_ss in hypernyms:
 			# 	hyper_ss_feature = self.get_feature_synset(hyper_ss, index)
@@ -273,6 +273,7 @@ class Featurizer():
 	Each text contains a 
 	'''
 	def featurize(self, text):
+
 		output = self.nlp.annotate(text, properties={
 		  'annotators': 'tokenize, ssplit, pos', # , ', #, lemma', # ,ner,, ner',
 		  # 'annotators': 'tokenize,ssplit,pos,lemma,ner',

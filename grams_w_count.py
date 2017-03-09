@@ -46,7 +46,7 @@ def worker_task(files, args, worker_id):
 				for gram_length in range(1, args.ngrams + 1):
 					add_to_dict(dic, text, gram_length)
 				# cast to unicode string, to lower case, remove non-alphabet characters before processing
-				
+	
 		#dump the gram info	
 		file_name, _ = splitext(basename(inputfile))
 		with open(join(args.outputpath, file_name + ".wgram"), "w") as F:

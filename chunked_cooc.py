@@ -38,8 +38,8 @@ def process(text, featurizer, cooc, window_size):
 	return N
 
 
-def worker_task(files, args, worker_id):
-	featurizer = Featurizer(Settings())
+def worker_task(files, args, worker_id, port):
+	featurizer = Featurizer(Settings(port=port))
 	cooc = {} # in format (word1, word2) : count
 	Counter = 0 # Number of articles processed
 	file_count = 0
@@ -57,7 +57,7 @@ def worker_task(files, args, worker_id):
 					continue
 				if line.startswith("</doc>"):
 					# some paragraph ends
-					tokens_count += process(" ".join(text), featurizer, cooc, args.window_size)
+					tokens_count += process(text, featurizer, cooc, args.window_size)
 					text = []
 					Counter += 1
 					if Counter%200 == 0:
@@ -69,7 +69,7 @@ def worker_task(files, args, worker_id):
 					if Counter % 5000 == 0:
 						sys.stdout.write("{}: Finished processing article:{}\n".format(worker_id, Counter))
 					continue
-				text.append(line)
+				text.extend(word_tokenize(filter_with_alphabet(sanitize_line(line), args.alphabet)))
 		F_out.close()
 		sys.stdout.write("{}: Finished processing file:{}: {} tokens, {} entries found\n".format(worker_id, inputfile, tokens_count, len(cooc)))
 		file_count += 1
@@ -87,23 +87,22 @@ if __name__ == "__main__":
 	print args
 	print len(args.inputfiles), "files found."
 
-	worker_task(args.inputfiles, args, 0)
 	workers = []
 
-	# files_per_worker = int(len(args.inputfiles) / (1. * args.cores)) + 1
-	# sys.stdout.write("{} files per worker\n".format(files_per_worker))
-	# for i in range(0, len(args.inputfiles), files_per_worker):
-	# 	end = i + files_per_worker
-	# 	if end > len(args.inputfiles):
-	# 		end = len(args.inputfiles)
-	# 	files_for_worker = args.inputfiles[i:end]
-	# 	p = Process(target=worker_task, args=(files_for_worker, args, i / files_per_worker))
-	# 	p.start()
-	# 	workers.append(p)
-	# for idx, worker in enumerate(workers):
-	# 	worker.join()
-	# 	sys.stdout.write("{}: Exited with code {}\n".format(idx, worker.exitcode))
-	# 	if worker.exitcode != 0:
-	# 		exit(1)
+	files_per_worker = int(len(args.inputfiles) / (1. * args.cores)) + 1
+	sys.stdout.write("{} files per worker\n".format(files_per_worker))
+	for i in range(0, len(args.inputfiles), files_per_worker):
+		end = i + files_per_worker
+		if end > len(args.inputfiles):
+			end = len(args.inputfiles)
+		files_for_worker = args.inputfiles[i:end]
+		p = Process(target=worker_task, args=(files_for_worker, args, i / files_per_worker, 9000))
+		p.start()
+		workers.append(p)
+	for idx, worker in enumerate(workers):
+		worker.join()
+		sys.stdout.write("{}: Exited with code {}\n".format(idx, worker.exitcode))
+		if worker.exitcode != 0:
+			exit(1)
 
 	write_checkpoint_file(args.outputpath)
