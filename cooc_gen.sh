@@ -40,7 +40,7 @@ if [ ! -e $COOC_PATH/$SIGNAL_FILE ]; then
 	mkdir -pv $COOC_PATH
 	echo "$ find $ARTICLE_PATH/wiki_0* 2>>log.txt | xargs python chunked_cooc.py -o $COOC_PATH --cores $NUM_WORKERS"
 	# find $ARTICLE_PATH/wiki_0* 2>>log.txt | xargs python chunked_cooc.py -o $COOC_PATH --cores $NUM_WORKERS
-	python chunked_cooc.py -o $COOC_PATH --cores $NUM_WORKERS $ARTICLE_PATH/wiki_00 $ARTICLE_PATH/wiki_01 $ARTICLE_PATH/wiki_02
+	python chunked_cooc.py -o $COOC_PATH --cores $NUM_WORKERS $ARTICLE_PATH/wiki_00 $ARTICLE_PATH/wiki_01 $ARTICLE_PATH/wiki_02 # $ARTICLE_PATH/wiki_03 $ARTICLE_PATH/wiki_04 $ARTICLE_PATH/wiki_05
 	if [ $? -eq 0 ]; then
 		echo successfully counted cooccurrence by chunk
 	else
