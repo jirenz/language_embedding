@@ -247,7 +247,7 @@ class Featurizer():
 			# 	also_ss_feature['t+'] = 'also'
 			# 	features[index].append(also_ss_feature)
 			# 	continue
-
+			hypernyms = ss.hypernyms()
 			for hyper_ss in hypernyms:
 				hyper_ss_feature = self.get_feature_synset(hyper_ss, index)
 				hyper_ss_feature['t+'] = 'hyper'
