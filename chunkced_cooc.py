@@ -11,8 +11,8 @@ from nltk import word_tokenize
 from helper import filter_with_alphabet
 from helper import sanitize_line
 from helper import write_checkpoint_file
+from helper import interval_intersect
 import coocformatter
-
 
 def inc_coocurrence(Dict, label_1, label_2, value):
 	if label_1 < 0 or label_2 < 0:
@@ -23,7 +23,7 @@ def inc_coocurrence(Dict, label_1, label_2, value):
 	except KeyError:
 		Dict[(label_1, label_2)] = value
 
-def process(text, featurizer, cooc):
+def process(text, featurizer, cooc, window_size):
 	features = featurizer.featurize(text)
 	N = len(features)
 	for center in range(window_size, N):
@@ -46,7 +46,6 @@ def worker_task(files, args, worker_id):
 	text = []
 	for inputfile in files:
 		sys.stdout.write("{}: Processing file:{}\n".format(worker_id, inputfile))
-		dic = {}
 		with open(inputfile, "r") as F:
 			text = []
 			# All articles begin with '<doc' and end with '</doc>'
@@ -55,7 +54,7 @@ def worker_task(files, args, worker_id):
 					continue
 				if line.startswith("</doc>"):
 					# some paragraph ends
-					process(text, featurizer, cooc)
+					process(text, featurizer, cooc, args.window_size)
 					text = []
 					Counter += 1
 					if Counter % 5000 == 0:
@@ -66,12 +65,10 @@ def worker_task(files, args, worker_id):
 		with open(join(args.outputpath, file_name + ".cooc_chunked"), 'wb') as F:
 			for key, val in cooc.iteritems():
 				word1, word2 = key
-				coocformatter.write_CREC(F, word1, word2, key)
+				coocformatter.write_CREC(F, word1, word2, val)
 
-		sys.stdout.write("{}: Finished processing file:{}\n".format(worker_id, inputfile))
+		sys.stdout.write("{}: Finished processing file:{}: {} entries found\n".format(worker_id, inputfile, len(cooc)))
 		file_count += 1
-		# clear up
-		del dic
 	
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description='For a given wiki corpus, generate features for it')
@@ -79,6 +76,7 @@ if __name__ == "__main__":
 						help='files to be processed')
 	parser.add_argument('-o', '--outputpath', default='./', type=str, help='output path')
 	parser.add_argument('--cores', default=6, type=int, help='number of concurrent threads')
+	parser.add_argument('--window_size', default=20, type=int, help='number of concurrent threads')
 	parser.add_argument('-a', '--alphabet', default='abcdefghijklmnopqrstuvwxyz -',
 		 type=str, help='supported alphabet')
 	args = parser.parse_args()

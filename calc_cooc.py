@@ -9,7 +9,7 @@ from helper import interval_intersect
 from helper import get_pos_tags
 from featurizer import Featurizer, Settings
 
-window_size = 10
+window_size = 6
 gram_length = default_gram_length
 
 def inc_coocurrence(Dict, label_1, label_2, value):
@@ -24,7 +24,7 @@ def process(text, featurizer, cooc):
 
 	N = len(features)
 	for center in range(window_size, N):
-		# only consider left half, notice that the result matrix is upper-right only
+ 	# only consider left half, notice that the result matrix is upper-right only
 		cur_list = features[center]
 		for l in range(center - window_size, center):
 			l_list = features[l]

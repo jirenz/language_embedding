@@ -24,4 +24,8 @@ def read_CREC(binary_stream):
 
 def write_CREC(binary_stream, word1, word2, val):
 	crec = Struct(CREC_FORMAT)
-	return binary_stream.write(crec.pack(wrod1, word2, val))
+	try:
+		return binary_stream.write(crec.pack(word1, word2, val))
+	except: 
+		print word1, word2, val
+		raise

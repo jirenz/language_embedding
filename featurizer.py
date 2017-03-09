@@ -7,6 +7,12 @@ from nltk import word_tokenize
 from nltk import pos_tag
 from nltk.corpus import wordnet as wn
 from nltk.wsd import lesk
+# from pycorenlp import StanfordCoreNLP
+# nlp = StanfordCoreNLP('http://localhost:9000')
+# output = nlp.annotate(text, properties={
+#   'annotators': 'tokenize,ssplit,pos,depparse,parse',
+#   'outputFormat': 'json'
+#   })
 
 '''
 Requirement:
@@ -84,7 +90,7 @@ class FeatureLabeler():
 
 	def synset_val(self, ss_offset):
 		try:
-			return self.synset_to_label[ss_offset] + self.synset_offset
+			return self.synset_to_label[str(ss_offset)] + self.synset_offset
 		except KeyError:
 			return -1
 
@@ -214,6 +220,7 @@ class Featurizer():
 		self.get_feature_pos(fragment, features)
 		self.get_feature_gram(fragment, features)
 		self.get_feature_wordnet(fragment, features)
+		# print "featurize"
 		return features
 
 
