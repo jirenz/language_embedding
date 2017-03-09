@@ -66,17 +66,16 @@ def worker_task(files, args, worker_id):
 					tokens_count += process(" ".join(text), featurizer, cooc, args.window_size)
 					text = []
 					Counter += 1
-					if Counter%200 == 0:
-						dump_to_file(worker_id, cooc, F_out)
-						cooc = {}
 					if Counter % 5000 == 0:
 						sys.stdout.write("{}: Finished processing article:{}\n".format(worker_id, Counter))
+						dump_to_file(worker_id, cooc, F_out)
+						cooc = {}
 					continue
 				text.append(line)
 		dump_to_file(worker_id, cooc, F_out)
 		cooc = {}
 		F_out.close()
-		sys.stdout.write("{}: Finished processing file:{}: {} tokens, {} entries found\n".format(worker_id, inputfile, tokens_count, len(cooc)))
+		sys.stdout.write("{}: Finished processing file:{}: {} tokens\n".format(worker_id, inputfile, tokens_count))
 		file_count += 1
 	
 if __name__ == "__main__":
