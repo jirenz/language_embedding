@@ -151,7 +151,7 @@ class Featurizer():
 			labeler = FeatureLabeler()
 		self.settings = settings
 		self.labeler = labeler
-		self.nlp = StanfordCoreNLP('http://localhost:9000')
+		self.nlp = StanfordCoreNLP('http://localhost:9001')
 		#  self.nlp = spacy.load('en')               # You are here.
 
 	def get_feature_pos(self, fragment, tagged, features):	
