@@ -1,16 +1,13 @@
 from nltk.corpus import wordnet as wn
 
-wn_pos = []
-wn_pos.append(wn.NOUN)
-wn_pos.append(wn.VERB)
-wn_pos.append(wn.ADJ)
-wn_pos.append(wn.ADV)
-
+# wn_pos = []
+# wn_pos.append(wn.NOUN)
+# wn_pos.append(wn.VERB)
+# wn_pos.append(wn.ADJ)
+# wn_pos.append(wn.ADV)
 ssoffs = []
-for pos in wn_pos:
-	for ss in list(wn.all_synsets(pos)):
-		ssoffs.append(ss.offset())
-
+for ss in list(wn.all_synsets()):
+	ssoffs.append(ss.offset())
 
 with open('synset_offset_table.ref', 'w') as f:
 	for idx, ssoff in enumerate(ssoffs):

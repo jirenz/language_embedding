@@ -150,3 +150,9 @@ def get_wordnet_pos(treebank_tag):
         return wordnet.ADV
     else:
         return ''
+
+
+# from nltk.corpus import wordnet
+# syns = list(wordnet.all_synsets())
+# offsets_list = [(s.offset(), s) for s in syns]
+# offsets_dict = dict(offsets_list)

@@ -15,7 +15,7 @@ Requirement:
 '''
 
 class Settings():
-	def __init__(self, all_grams, ss_weight=None):
+	def __init__(self, ss_weight=None):
 		if ss_weight is None:
 			ss_weight = {
 				'self': 1,
@@ -23,7 +23,6 @@ class Settings():
 				'sim': 1,
 				'also': 1
 			}
-		self.all_grams = all_grams
 		self.ss_weight = ss_weight
 		self.gram_length = default_gram_length
 		self.lesk_width = 5
@@ -74,6 +73,7 @@ class FeatureLabeler():
 
 		self.minimum = 1
 		self.maximum = self.tag_offset + len(self.label_to_tag)
+		print "labeler loaded {} labels".format(self.maximum - self.minimum)
 		return
 
 	def tag_val(self, tag):
@@ -96,18 +96,35 @@ class FeatureLabeler():
 
 	def val_to_feature(self, val):
 		if val < self.minimum or val >= self.maximum:
-			return None
+			return None, None
 		elif val < self.synset_offset:
-			return self.label_to_gram(val - self.gram_offset), 'gram'
+			return self.label_to_gram[val - self.gram_offset], 'gram'
 		elif val < self.tag_offset:
-			return self.label_to_synset(val - self.synset_offset), 'ss'
+			return self.label_to_synset[val - self.synset_offset], 'ss'
 		else:
-			return self.label_to_tag(val - self.tag_offset), 'pos'
+			return self.label_to_tag[val - self.tag_offset], 'pos'
+
+	def generate_vocab_file(self, path):
+		print "writing vocabulary to {}".format(path)
+		f = open(path, 'w')
+		for val in xrange(self.minimum, self.maximum):
+			description, fea_type = self.val_to_feature(val)
+			if fea_type == 'gram':
+				f.write('{} 1\n'.format(description.replace(' ', '_')))
+			if fea_type == 'ss':
+				f.write('ss_{} 1\n'.format(description))
+			if fea_type == 'pos':
+				f.write('pos_{} 1\n'.format(description))
+		f.close()
 
 class Featurizer():
-	def __init__(self, settings):
+	def __init__(self, settings=None, labeler=None):
+		if settings is None:
+			settings = Settings()
+		if labeler is None:
+			labeler = FeatureLabeler()
 		self.settings = settings
-		self.labeler = FeatureLabeler()
+		self.labeler = labeler
 
 	def get_feature_pos(self, fragment, features):
 		tagged = pos_tag(fragment)
@@ -205,26 +222,7 @@ class Featurizer():
 # fragment = fragment.split(" ")
 
 
-# all_grams = {}
-# counter = 0
-# for word in fragment:
-# 	all_grams[word] = (counter, 0)
-# 	counter += 1
-# all_grams["your head"] = (counter, 0)
-# counter += 1
-# all_grams["a ball"] = (counter, 0)
-# counter += 1
-# all_grams["derives from"] = (counter, 0)
-# counter += 1
-
-# ss_weight = {
-# 	'self': 1,
-# 	'hyper': 0.1,
-# 	'sim': 0.01,
-# 	'also': 0.001
-# }
-
-# settings = Settings(all_grams, ss_weight)
+# settings = Settings() # all_grams, ss_weight])
 # fea = Featurizer(settings)
 
 # print fea.featurize(fragment)

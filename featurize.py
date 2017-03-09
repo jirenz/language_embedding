@@ -13,9 +13,8 @@ from helper import sanitize_line
 from helper import write_checkpoint_file
 
 
-
 def worker_task(files, args, worker_id):
-	featurizer = Featurizer(Settings({}))
+	featurizer = Featurizer(Settings())
 	Counter = 0 # Number of articles processed
 	file_count = 0
 	text = []
@@ -32,6 +31,7 @@ def worker_task(files, args, worker_id):
 					continue
 				if line.startswith("</doc>"):
 					# some paragraph ends
+					featurizer.featurize(text)
 					Counter += 1
 					if Counter % 1 == 0:
 						sys.stdout.write("{}: Finished processing article:{}\n".format(worker_id, Counter))
@@ -39,9 +39,10 @@ def worker_task(files, args, worker_id):
 							exit(0)
 					text = []
 					continue
-				print featurizer.featurize(word_tokenize(filter_with_alphabet(sanitize_line(line), args.alphabet)))
+				text.extend(word_tokenize(filter_with_alphabet(sanitize_line(line), args.alphabet)))
 				# F_out.write(str(featurizer.featurize(word_tokenize(filter_with_alphabet(sanitize_line(line), args.alphabet)))))
 				# text.extend()
+				# 
 			F_out.close()
 		sys.stdout.write("{}: Finished processing file:{}\n".format(worker_id, inputfile))
 		file_count += 1
