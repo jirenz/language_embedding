@@ -15,7 +15,17 @@ import coocformatter
 
 def process(text, featurizer, cooc):
 	features = featurizer.featurize(text)
-	raise NotImplementedError
+
+	N = len(features)
+	for center in range(window_size, N):
+		# only consider left half, notice that the result matrix is upper-right only
+		cur_list = features[center]
+		for l in range(center - window_size, center):
+			l_list = features[l]
+			for token_1 in cur_list:
+				for token_2 in l_list:
+					if not interval_intersect(token_1["l"], token_1["r"], token_2["l"], token_2["r"]):
+						inc_coocurrence(cooc, token_1["val"], token_2["val"], token_1.get("w", 1.) * token_2.get("w", 1.) / (center - l))
 	return
 
 

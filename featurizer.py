@@ -18,12 +18,12 @@ class Settings():
 	def __init__(self, ss_weight=None):
 		if ss_weight is None:
 			ss_weight = {
-				'self': 1,
-				'hyper': 1,
-				'sim': 1,
-				'also': 1
+				'self': 1.,
+				'hyper': 1.,
+				'sim': 1.,
+				'also': 1.
 			}
-		self.ss_weight = ss_weight
+		self.ss_weight = ss_weight 
 		self.gram_length = default_gram_length
 		self.lesk_width = 5
 
