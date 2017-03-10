@@ -1,7 +1,7 @@
 import sys
 
-num_grams = 70000
-num_synsets = 30000
+num_grams = 60000
+num_synsets = 20000
 num_tags = 100
 
 def read_file(f):
