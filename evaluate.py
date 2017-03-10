@@ -99,7 +99,7 @@ def predictor(wd1, wd2, wd3):
 	return predictions
 
 
-parser = argparse.ArgumentParser(description='Given a n-gram statistic files, generate sub-word sequence info')
+parser = argparse.ArgumentParser(description='evaluate trained vectors')
 parser.add_argument('path', metavar='path_to_vector_file_and_vocab_file', type=str, help='filepath')
 parser.add_argument('--top', '-t', metavar='top_n', type=int, default=1, help='show top n results for the analogy test')
 args = parser.parse_args()
@@ -117,7 +117,7 @@ filenames = [
 prefix = glove_path + '/eval/question-data/'
 
 words = []
-with open(join(args.path, 'vocab.txt'), 'r') as F:
+with open(join(args.path+'vocab.txt'), 'r') as F:
 	for line in F:
 		words.append(line.strip().split()[0])
 vocab_size = len(words)
@@ -130,7 +130,7 @@ for idx, token in enumerate(words):
 	ivocab[idx] = token
 
 
-with open(join(args.path, 'vectors.txt'), 'r') as f:
+with open(join(args.path+'vectors.txt'), 'r') as f:
 	vectors = {}
 	for line in f:
 		vals = line.rstrip().split(' ')
@@ -139,6 +139,9 @@ with open(join(args.path, 'vectors.txt'), 'r') as f:
 		except KeyError:
 			print "got unkown key: ", vals[0]
 			continue
+		except ValueError:
+			print vals
+			exit(0)
 
 vector_dim = len(vectors[ivocab[0]])
 
