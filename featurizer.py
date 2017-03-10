@@ -31,7 +31,7 @@ class Settings():
 				'sim': 0.5,
 				'also': 0.5
 			}
-		self.ss_weight = ss_weight 
+		self.ss_weight = ss_weight
 		self.gram_length = default_gram_length
 		self.lesk_width = 5
 

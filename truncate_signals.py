@@ -23,8 +23,9 @@ def read_file(f):
 		line = line.rstrip('\n')
 		text = line[:line.rfind(' ')].strip()
 		count = float(line[line.rfind(' '):].strip())
-		if (text.find('the') >= 0 and text != 'the') or (text.find('a') >= 0 and text != 'a') or (text.find('an') >= 0 and text != 'an'):
-			continue
+		# if (text.find(' the') >= 0 or text.find('the ') >= 0 or text.find(' a') >= 0 or text.find('a ') != 'a' or (text.find(' an ') >= 0 and text != 'an'):
+		# 	continue
+		# 	This is broken
 		cur.append((text, count))
 	grams.reverse()
 	synsets.reverse()

@@ -1,0 +1,54 @@
+1: Dumping 179523992 entries
+1: Finished processing file:/datadrive/data/text8
+$ mkdir -pv /datadrive/data/glove_text8
+$ python generate_vocab.py /datadrive/data/glove_text8/vocab.txt
+labeler loaded 80035 labels
+writing vocabulary to /datadrive/data/glove_text8/vocab.txt
+successfully generated vocabulary
+$ glove/build//shuffle -memory 40 -verbose 2 < /datadrive/data/glove_text8/text8.cooc > /datadrive/data/glove_text8/cooc.shuff.bin
+SHUFFLING COOCCURRENCES
+array size: 2550136832
+Shuffling by chunks: processed 179523992 lines.
+Wrote 1 temporary file(s).
+Merging temp files: processed 179523992 lines.
+
+successfully shuffled cooccurrence
+$ glove/build//glove -save-file /datadrive/data/glove_text8/vectors.txt -threads 6 -input-file
+ /datadrive/data/glove_text8/cooc.shuff.bin -x-max 50 -iter 25 -vector-size 50 -binary 2 -vocab-file /datadrive/data/glove_text8/vocab.txt -verbose 2 -alpha 0.75 -checkpoint-every 5
+TRAINING MODEL
+Read 179523992 lines.
+Initializing parameters...done.
+vector size: 50
+vocab size: 80035
+x_max: 50.000000
+alpha: 0.750000
+03/10/17 - 12:45.38PM, iter: 001, cost: 0.022461
+03/10/17 - 12:46.06PM, iter: 002, cost: 0.015886
+03/10/17 - 12:46.33PM, iter: 003, cost: 0.013061
+03/10/17 - 12:47.00PM, iter: 004, cost: 0.011611
+03/10/17 - 12:47.27PM, iter: 005, cost: 0.010851
+    saving itermediate parameters for iter 005...done.
+03/10/17 - 12:47.56PM, iter: 006, cost: 0.010392
+03/10/17 - 12:48.23PM, iter: 007, cost: 0.010086
+03/10/17 - 12:48.51PM, iter: 008, cost: 0.009867
+03/10/17 - 12:49.18PM, iter: 009, cost: 0.009705
+03/10/17 - 12:49.45PM, iter: 010, cost: 0.009579
+    saving itermediate parameters for iter 010...done.
+03/10/17 - 12:50.14PM, iter: 011, cost: 0.009480
+03/10/17 - 12:50.41PM, iter: 012, cost: 0.009400
+03/10/17 - 12:51.08PM, iter: 013, cost: 0.009334
+03/10/17 - 12:51.35PM, iter: 014, cost: 0.009279
+03/10/17 - 12:52.02PM, iter: 015, cost: 0.009232
+    saving itermediate parameters for iter 015...done.
+03/10/17 - 12:52.31PM, iter: 016, cost: 0.009192
+03/10/17 - 12:52.58PM, iter: 017, cost: 0.009158
+03/10/17 - 12:53.25PM, iter: 018, cost: 0.009128
+03/10/17 - 12:53.52PM, iter: 019, cost: 0.009101
+03/10/17 - 12:54.20PM, iter: 020, cost: 0.009077
+    saving itermediate parameters for iter 020...done.
+03/10/17 - 12:54.48PM, iter: 021, cost: 0.009056
+03/10/17 - 12:55.15PM, iter: 022, cost: 0.009037
+03/10/17 - 12:55.42PM, iter: 023, cost: 0.009020
+03/10/17 - 12:56.10PM, iter: 024, cost: 0.009004
+03/10/17 - 12:56.37PM, iter: 025, cost: 0.008990
+    saving itermediate parameters for iter 025...done.
