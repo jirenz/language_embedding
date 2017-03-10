@@ -1,66 +1,62 @@
+
 import sys
 import json
 from os import listdir
 from os.path import isfile, join, basename, splitext
 import random
 import argparse
-from nltk import word_tokenize
-from multiprocessing import Process
-from featurizer import Featurizer, Settings
-from nltk import word_tokenize
-from helper import filter_with_alphabet
 from helper import sanitize_line
+from helper import filter_with_alphabet
 from helper import write_checkpoint_file
-from helper import interval_intersect
 from helper import inc_coocurrence
 from helper import process_features
 from helper import dump_cooc_to_file
-import coocformatter
+from multiprocessing import Process
+from featurizer import Featurizer
 
-
-
+# Add each n-gram (n = gram_length) from texts, into Dict
+def add_to_dict(Dict, text, gram_length, debug = False):
+	text_length = len(text)
+	for i in range(text_length + 1 - gram_length):
+		gram = unicode(" ".join(text[i : i + gram_length]))
+		if debug: print i, gram
+		try:
+			Dict[gram] += 1
+		except KeyError:
+			Dict[gram] = 1
 
 def worker_task(files, args, worker_id):
 	featurizer = Featurizer()
-	cooc = {} # in format (word1, word2) : count
+	cooc = {}
 	Counter = 0 # Number of articles processed
 	file_count = 0
-	text = []
 	for inputfile in files:
-		tokens_count = 0
 		file_name, _ = splitext(basename(inputfile))
-		F_out = open(join(args.outputpath, file_name + ".cooc_chunked"), 'wb')
+		output_file = open(join(args.outputpath, file_name + ".cooc"), 'wb')
 		sys.stdout.write("{}: Processing file:{}\n".format(worker_id, inputfile))
+		dic = {}
 		with open(inputfile, "r") as F:
-			text = []
-			chars = 0
-			# All articles begin with '<doc' and end with '</doc>'
-			for line in F:
-				if line.startswith("<doc"):
-					continue
-				if line.startswith("</doc>"):
-					# some paragraph ends
-					tokens_count += process(" ".join(text), featurizer, cooc, args.window_size)
-					text = []
-					chars = 0
-					Counter += 1
-					if Counter % 500 == 0:
-						sys.stdout.write("{}: Finished processing article:{}\n".format(worker_id, Counter))
-						dump_cooc_to_file(worker_id, cooc, F_out)
-						cooc = {}
-					continue
-				text.append(line) # Cannot be longer than 100000
-				chars += len(line)
-				if chars > 10000:
-					tokens_count += process_features(" ".join(text), featurizer, cooc, args.window_size)
-					text = []
-					chars = 0
-		dump_cooc_to_file(worker_id, cooc, F_out)
-		cooc = {}
-		F_out.close()
-		sys.stdout.write("{}: Finished processing file:{}: {} tokens\n".format(worker_id, inputfile, tokens_count))
+		 	read = 0
+			while True:
+				try:
+					text = F.read(4096)
+					if len(text) == 0:
+						break
+					read += len(text)
+					process_features(text, featurizer, cooc, args.window_size)
+				except: 
+					break
+				print "read", read
+
+		#dump the gram info	
+		dump_cooc_to_file(worker_id, cooc, output_file)
+
+		sys.stdout.write("{}: Finished processing file:{}\n".format(worker_id, inputfile))
 		file_count += 1
-	
+
+		# clear up
+		del dic
+
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description='For a given wiki corpus, generate features for it')
 	parser.add_argument('inputfiles', metavar='path', type=str, nargs='+',
@@ -70,13 +66,18 @@ if __name__ == "__main__":
 	parser.add_argument('--window_size', default=6, type=int, help='window size for cooccurrence')
 	parser.add_argument('-a', '--alphabet', default='abcdefghijklmnopqrstuvwxyz ',
 		 type=str, help='supported alphabet')
+	# Macros and Constants
 	args = parser.parse_args()
 	print args
+
 	print len(args.inputfiles), "files found."
+	
+	worker_task(args.inputfiles, args, len(args.inputfiles))
+	exit(0)
 
 	workers = []
 
-	files_per_worker = int(len(args.inputfiles) / (1. * args.cores))
+	files_per_worker = int(len(args.inputfiles) / (1. * args.cores)) + 1
 	sys.stdout.write("{} files per worker\n".format(files_per_worker))
 	for i in range(0, len(args.inputfiles), files_per_worker):
 		end = i + files_per_worker
@@ -93,3 +94,5 @@ if __name__ == "__main__":
 			exit(1)
 
 	write_checkpoint_file(args.outputpath)
+	# End Processing files
+

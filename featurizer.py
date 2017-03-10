@@ -1,7 +1,7 @@
 from utils import default_gram_length
 from utils import tag_ref_file, synset_ref_file, gram_ref_file #, ner_ref_file
-from helper import get_wordnet_info
-from helper import get_pos_tags
+# from helper import get_wordnet_info
+# from helper import get_pos_tags
 from helper import get_wordnet_pos
 from nltk import word_tokenize
 from nltk import pos_tag

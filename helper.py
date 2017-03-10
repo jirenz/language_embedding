@@ -5,9 +5,10 @@ import re
 import numpy as np
 from nltk.corpus import wordnet as wn
 from nltk.wsd import lesk
-from nltk.stem import WordNetLemmatizer
-from nltk import pos_tag
-from nltk.corpus import wordnet
+# from nltk.stem import WordNetLemmatizer
+# from nltk import pos_tag
+# from nltk.corpus import wordnet
+import coocformatter
 
 #	This helper function loads a given json file and combine it to the
 #	current dictionary. The resulting dictionary can be quite huge.
@@ -91,8 +92,8 @@ def mkdir_p(path):
 		# else:
 		# 	raise
 
-def get_pos_tags(sentence):
-	return [tag for word, tag in pos_tag(sentence)]
+# def get_pos_tags(sentence):
+# 	return [tag for word, tag in pos_tag(sentence)]
 
 # st = WordNetLemmatizer()
 def get_wordnet_info(index, context, context_pos): #, config):
@@ -141,16 +142,45 @@ def interval_intersect(l1, r1, l2, r2):
 # http://stackoverflow.com/questions/15586721/wordnet-lemmatization-and-pos-tagging-in-python?noredirect=1&lq=1
 def get_wordnet_pos(treebank_tag):
     if treebank_tag.startswith('J'):
-        return wordnet.ADJ
+        return wn.ADJ
     elif treebank_tag.startswith('V'):
-        return wordnet.VERB
+        return wn.VERB
     elif treebank_tag.startswith('N'):
-        return wordnet.NOUN
+        return wn.NOUN
     elif treebank_tag.startswith('R'):
-        return wordnet.ADV
+        return wn.ADV
     else:
         return ''
 
+def inc_coocurrence(Dict, label_1, label_2, value):
+	if label_1 < 0 or label_2 < 0:
+		return
+	if label_1 > label_2: label_1, label_2 = label_2, label_1
+	try:
+		Dict[(label_1, label_2)] += value
+	except KeyError:
+		Dict[(label_1, label_2)] = value
+
+def process_features(text, featurizer, cooc, window_size):
+	features = featurizer.featurize(text)
+	N = len(features)
+	for center in range(window_size, N):
+		# only consider left half, notice that the result matrix is upper-right only
+		cur_list = features[center]
+		for l in range(center - window_size, center):
+			l_list = features[l]
+			for token_1 in cur_list:
+				for token_2 in l_list:
+					if not interval_intersect(token_1["l"], token_1["r"], token_2["l"], token_2["r"]):
+						inc_coocurrence(cooc, token_1["val"], token_2["val"], token_1.get("w", 1.) * token_2.get("w", 1.) / (center - l))
+	return N
+
+def dump_cooc_to_file(worker_id, cooc, F_out):
+	sys.stdout.write("{}: Dumping {} entries\n".format(worker_id, len(cooc)))
+	for key, val in cooc.iteritems():
+		word1, word2 = key
+		coocformatter.write_CREC(F_out, word1, word2, val)
+	return
 
 # from nltk.corpus import wordnet
 # syns = list(wordnet.all_synsets())
