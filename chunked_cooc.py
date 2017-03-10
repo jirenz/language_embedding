@@ -92,7 +92,7 @@ if __name__ == "__main__":
 	parser.add_argument('-o', '--outputpath', default='./', type=str, help='output path')
 	parser.add_argument('--cores', default=1, type=int, help='number of concurrent threads')
 	parser.add_argument('--window_size', default=6, type=int, help='window size for cooccurrence')
-	parser.add_argument('-a', '--alphabet', default='abcdefghijklmnopqrstuvwxyz -',
+	parser.add_argument('-a', '--alphabet', default='abcdefghijklmnopqrstuvwxyz ',
 		 type=str, help='supported alphabet')
 	args = parser.parse_args()
 	print args

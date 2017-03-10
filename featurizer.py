@@ -35,7 +35,113 @@ class Settings():
 		self.gram_length = default_gram_length
 		self.lesk_width = 5
 
+class FeatureLabelerHungry():
+	def __init__(self):
+		self.tag_to_label = {}
+		self.label_to_tag = {}
+		self.tag_count = {}
+		self.tag_offset = 2E8
+		
+		self.synset_to_label = {}
+		self.label_to_synset = {}
+		self.synset_count = {}
+		self.synset_offset = 1E8
 
+		self.gram_to_label = {}
+		self.label_to_gram = {}
+		self.gram_count = {}
+		self.gram_offset = 0
+
+	def increment_features(self, features):
+		for feature_list in features:
+			for feature in feature_list:
+				w = feature.get('w', 1.)
+				val = feature['val']
+				fea, fea_type = self.val_to_feature(val)
+				if fea_type == 'gram':
+					self.gram_count[fea] += w
+				elif fea_type == 'ss':
+					self.synset_count[fea] += w
+				elif fea_type == 'pos':
+					self.tag_count[fea] += w
+				else:
+					print "Unkonwn", fea, fea_type, "from val", val
+					raise KeyError
+	
+	def tag_val(self, tag):
+		try:
+			return self.tag_to_label[tag] + self.tag_offset
+		except KeyError:
+			index = len(self.tag_to_label)
+			self.tag_to_label[tag] = index
+			self.label_to_tag[index] = tag
+			self.tag_count[tag] = 0
+			return index + self.tag_offset
+
+	def synset_val(self, ss_offset):
+		ss_offset = str(ss_offset)
+		try:
+			return self.synset_to_label[ss_offset] + self.synset_offset
+		except KeyError:
+			index = len(self.synset_to_label)
+			self.synset_to_label[ss_offset] = index
+			self.label_to_synset[index] = ss_offset
+			self.synset_count[ss_offset] = 0
+			return index + self.synset_offset
+
+	def gram_val(self, gram_string):
+		try:
+			return self.gram_to_label[gram_string] + self.gram_offset
+		except KeyError:
+			index = len(self.gram_to_label)
+			self.gram_to_label[gram_string] = index
+			self.label_to_gram[index] = gram_string
+			self.gram_count[gram_string] = 0
+			return index + self.gram_offset
+
+	# def ner_val(self, ner_string):
+	# 	try:
+	# 		return self.ner_to_label[ner_string] + self.ner_offset
+	# 	except KeyError:
+	# 		print "ner error"
+	# 		return -1
+
+	def val_to_feature(self, val):
+		if val < self.synset_offset:
+			return self.label_to_gram[val - self.gram_offset], 'gram'
+		elif val < self.tag_offset:
+			return self.label_to_synset[val - self.synset_offset], 'ss'
+		else:
+			return self.label_to_tag[val - self.tag_offset], 'pos'
+
+	def dump(self, outputpath):
+		with open(outputpath + '.summary', 'w') as f:
+			f.write("# grams: {}\n".format(len(self.gram_count)))
+			f.write("# synsets: {}\n".format(len(self.synset_count)))
+			f.write("# tags: {}\n".format(len(self.tag_count)))
+			f.write("# total: {}\n".format(total))
+			total = len(self.gram_count) + len(self.synset_count) + len(self.tag_count)
+		with open(outputpath, 'w') as f:
+			f.write("# grams: {}\n".format(len(self.gram_count)))
+			f.write("# synsets: {}\n".format(len(self.synset_count)))
+			f.write("# tags: {}\n".format(len(self.tag_count)))
+			f.write("# total: {}\n".format(total))
+			total = len(self.gram_count) + len(self.synset_count) + len(self.tag_count)
+			f.write("--grams\n")
+			self.dump_dict(f, self.gram_count)
+			f.write("--synsets\n")
+			self.dump_dict(f, self.synset_count)
+			f.write("--tags\n")
+			self.dump_dict(f, self.tag_count)
+
+	def dump_dict(self, f, dict, sort=True):
+		sorted_x = sorted(x.items(), key=lambda x: x[1])
+		for key, val in sorted_x:
+			f.write('{} {}\n'.format(key, val))
+		return
+
+	def read(self, inputpath):
+		pass
 
 # Invalid vals are labelled by -1
 class FeatureLabeler():

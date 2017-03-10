@@ -1,6 +1,7 @@
 *.bin
 *.npy
 *.csv
+text8*
 
 Articles/*
 Tokenized/*
