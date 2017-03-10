@@ -23,6 +23,8 @@ VECTOR_SIZE=100
 BINARY=2
 VERBOSE=2
 
+SAVE_FILE=$DATA_PATH/$OUTPUT_PATH/vectors.txt
+
 BUILDDIR=glove/build/
 
 if [ ! -e $VOCAB_FILE ]; then

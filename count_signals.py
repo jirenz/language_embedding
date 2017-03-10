@@ -42,6 +42,7 @@ def worker_task(files, args, worker_id):
 					continue
 				text = filter_with_alphabet(sanitize_line(line), args.alphabet)
 				while True:
+					print len(text), "remaining"
 					if len(text) > 100000:
 						end = text.rfind(' ')
 						features = featurizer.featurize(text[:text.rfind(' ', 0, 99999)])
@@ -50,6 +51,7 @@ def worker_task(files, args, worker_id):
 					else: 
 						features = featurizer.featurize(text)
 						labeler.increment_features(features)
+						break
 
 		#dump the gram info	
 		file_name, _ = splitext(basename(inputfile))
