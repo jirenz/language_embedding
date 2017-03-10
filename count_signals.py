@@ -31,25 +31,27 @@ def worker_task(files, args, worker_id):
 		sys.stdout.write("{}: Processing file:{}\n".format(worker_id, inputfile))
 		dic = {}
 		with open(inputfile, "r") as F:
-			text = []
 			# All articles begin with '<doc' and end with '</doc>'
-			for line in F:
-				if line.startswith("<doc"):
-					continue
-				if line.startswith("</doc>"):
-					# some paragraph ends
-					Counter += 1
-					continue
-				text = filter_with_alphabet(sanitize_line(line), args.alphabet)
-				while True:
-					if len(text) > 100000:
-						end = text.rfind(' ')
-						features = featurizer.featurize(text[:text.rfind(' ', 0, 99999)])
-						labeler.increment_features(features)
-						text = text[text.rfind(' ', 0, 99999):]
-					else: 
-						features = featurizer.featurize(text)
-						labeler.increment_features(features)
+			# for line in F:
+			# 	if line.startswith("<doc"):
+			# 		continue
+			# 	if line.startswith("</doc>"):
+			# 		# some paragraph ends
+			# 		Counter += 1
+			# 		continue
+		 	
+		 	read = 0
+			while True:
+				try:
+					# filter_with_alphabet(sanitize_line(F.read(1024)), args.alphabet)
+					text = F.read(4096)
+					read += len(text)
+					features = featurizer.featurize(text)
+					labeler.increment_features(features)
+					break
+				except: 
+					break
+				print "read", read
 
 		#dump the gram info	
 		file_name, _ = splitext(basename(inputfile))

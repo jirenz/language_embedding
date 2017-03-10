@@ -115,18 +115,17 @@ class FeatureLabelerHungry():
 			return self.label_to_tag[val - self.tag_offset], 'pos'
 
 	def dump(self, outputpath):
+		total = len(self.gram_count) + len(self.synset_count) + len(self.tag_count)
 		with open(outputpath + '.summary', 'w') as f:
 			f.write("# grams: {}\n".format(len(self.gram_count)))
 			f.write("# synsets: {}\n".format(len(self.synset_count)))
 			f.write("# tags: {}\n".format(len(self.tag_count)))
 			f.write("# total: {}\n".format(total))
-			total = len(self.gram_count) + len(self.synset_count) + len(self.tag_count)
 		with open(outputpath, 'w') as f:
 			f.write("# grams: {}\n".format(len(self.gram_count)))
 			f.write("# synsets: {}\n".format(len(self.synset_count)))
 			f.write("# tags: {}\n".format(len(self.tag_count)))
 			f.write("# total: {}\n".format(total))
-			total = len(self.gram_count) + len(self.synset_count) + len(self.tag_count)
 			f.write("--grams\n")
 			self.dump_dict(f, self.gram_count)
 			f.write("--synsets\n")
@@ -134,8 +133,8 @@ class FeatureLabelerHungry():
 			f.write("--tags\n")
 			self.dump_dict(f, self.tag_count)
 
-	def dump_dict(self, f, dict, sort=True):
-		sorted_x = sorted(x.items(), key=lambda x: x[1])
+	def dump_dict(self, f, dictionary, sort=True):
+		sorted_x = sorted(dictionary.items(), key=lambda x: x[1])
 		for key, val in sorted_x:
 			f.write('{} {}\n'.format(key, val))
 		return
