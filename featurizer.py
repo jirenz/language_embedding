@@ -27,9 +27,9 @@ class Settings():
 		if ss_weight is None:
 			ss_weight = {
 				'self': 1.,
-				'hyper': 1.,
-				'sim': 1.,
-				'also': 1.
+				'hyper': 0.5,
+				'sim': 0.5,
+				'also': 0.5
 			}
 		self.ss_weight = ss_weight 
 		self.gram_length = default_gram_length
