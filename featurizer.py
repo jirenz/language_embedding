@@ -86,7 +86,7 @@ class FeatureLabeler():
 		# self.ner_offset = self.tag_offset + len(self.label_to_tag)
 
 		self.minimum = 1
-		self.maximum = self.tag_offset
+		self.maximum = self.tag_offset + len(self.label_to_tag)
 		# self.maximum = self.ner_offset + len(self.label_to_ner)
 		print "labeler loaded {} labels".format(self.maximum - self.minimum)
 		return

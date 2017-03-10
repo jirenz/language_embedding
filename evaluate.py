@@ -1,19 +1,15 @@
 import numpy as np
 import json
 import argparse
+from os.path import join
+
+def dump_pred(file, ivocab, wd1, wd2, wd3, wd4, predictions):
+	for index in xrange(len(wd1)):
+		file.write("{}, {}, {}, {}, {}\n".format(ivocab[wd1[index]], ivocab[wd2[index]], 
+			ivocab[wd3[index]], ivocab[wd4[index]], [ivocab[prediction[index]] for prediction in predictions]))
 
 
-parser = argparse.ArgumentParser(description='Given a n-gram statistic files, generate sub-word sequence info')
-parser.add_argument('vectorfile', metavar='path_to_vector_file', type=str, help='word vectors')
-parser.add_argument('label_gram', metavar='label_to_gram_reference', type=str, help='translation table')
-parser.add_argument('gram_label', metavar='gram_to_label_reference', type=str, help='translation table')
-# parser.add_argument('-o', '--outputpath', default='./char_seq.grams', type=str, help='output path')
-args = parser.parse_args()
-print(args)
-
-def evaluate_vectors(W, vocab, ivocab):
-	"""Evaluate the trained word vectors on a variety of tasks"""
-
+def evaluation(predictor, vocab, ivocab, result_file):
 	filenames = [
 		'capital-common-countries.txt', 'capital-world.txt', 'currency.txt',
 		'city-in-state.txt', 'family.txt', 'gram1-adjective-to-adverb.txt',
@@ -21,7 +17,7 @@ def evaluate_vectors(W, vocab, ivocab):
 		'gram5-present-participle.txt', 'gram6-nationality-adjective.txt',
 		'gram7-past-tense.txt', 'gram8-plural.txt', 'gram9-plural-verbs.txt',
 		]
-	prefix = '../glove/eval/question-data/'
+	prefix = glove_path + '/eval/question-data/'
 
 	# to avoid memory overflow, could be increased/decreased
 	# depending on system and vocab size
@@ -44,25 +40,16 @@ def evaluate_vectors(W, vocab, ivocab):
 		indices = np.array([[vocab[word] for word in row] for row in data])
 		ind1, ind2, ind3, ind4 = indices.T
 
-		predictions = np.zeros((len(indices),))
-		num_iter = int(np.ceil(len(indices) / float(split_size)))
-		for j in range(num_iter):
-			subset = np.arange(j*split_size, min((j + 1)*split_size, len(ind1)))
+		predictions = predictor(ind1, ind2, ind3)
 
-			pred_vec = (W[ind2[subset], :] - W[ind1[subset], :]
-				+  W[ind3[subset], :])
-			#cosine similarity if input W has been normalized
-			dist = np.dot(W, pred_vec.T)
+		dump_pred(result_file, ivocab, ind1, ind2, ind3, ind4, predictions)
 
-			for k in range(len(subset)):
-				dist[ind1[subset[k]], k] = -np.Inf
-				dist[ind2[subset[k]], k] = -np.Inf
-				dist[ind3[subset[k]], k] = -np.Inf
 
-			# predicted word index
-			predictions[subset] = np.argmax(dist, 0).flatten()
-
-		val = (ind4 == predictions) # correct predictions
+		val = np.zeros(ind4.shape)
+		for ques_index in xrange(ind4.shape[0]):
+			for pred_index in xrange(args.top):
+				if ind4[ques_index] == predictions[pred_index][ques_index]:
+					val[ques_index] = 1 # correct predictions
 		count_tot = count_tot + len(ind1)
 		correct_tot = correct_tot + sum(val)
 		if i < 5:
@@ -73,8 +60,8 @@ def evaluate_vectors(W, vocab, ivocab):
 			correct_syn = correct_syn + sum(val)
 
 		print("%s:" % filenames[i])
-		print('ACCURACY TOP1: %.2f%% (%d/%d)' %
-			(np.mean(val) * 100, np.sum(val), len(val)))
+		print('ACCURACY TOP%d: %.2f%% (%d/%d)' %
+			(args.top, np.mean(val) * 100, np.sum(val), len(val)))
 
 	print('Questions seen/total: %.2f%% (%d/%d)' %
 		(100 * count_tot / float(full_count), count_tot, full_count))
@@ -84,43 +71,97 @@ def evaluate_vectors(W, vocab, ivocab):
 		(100 * correct_syn / float(count_syn), correct_syn, count_syn))
 	print('Total accuracy: %.2f%%  (%i/%i)' % (100 * correct_tot / float(count_tot), correct_tot, count_tot))
 
-# with open('vocab.txt', 'r') as f:
-# 	words = [x.rstrip().split(' ')[0] for x in f.readlines()]
-# vocab = {w: idx for idx, w in enumerate(words)}
-# ivocab = {idx: w for idx, w in enumerate(words)}
-with open('/datadrive/data/glove/vocab.txt', 'r') as f:
-	words = [x.rstrip().split(' ')[0] for x in f.readlines()]
+def predictor(wd1, wd2, wd3):
+	predictions = []
+	for i in xrange(args.top):
+		predictions.append(np.zeros(wd1.shape))
+	
+	# num_iter = int(np.ceil(len(wd1) / float(split_size)))
+	for index in xrange(wd1.shape[0]):
+	# for j in range(num_iter):
+		# subset = np.arange(j*split_size, min((j + 1)*split_size, len(wd1)))
+
+		pred_vec = (W_norm[wd2[index], :] - W_norm[wd1[index], :]
+			+  W_norm[wd3[index], :])
+		#cosine similarity if input W has been normalized
+		dist = np.dot(W_norm, pred_vec.T)
+
+		dist[wd1[index]] = -np.Inf
+		dist[wd2[index]] = -np.Inf
+		dist[wd3[index]] = -np.Inf
+
+		# predicted word index
+		for i in xrange(args.top):
+			if i > 0:
+				dist[predictions[i - 1][index]] = -10000
+			predictions[i][index] = np.argmax(dist)
+		# predictions[subset] = np.argmax(dist, 0).flatten()
+	return predictions
+
+
+parser = argparse.ArgumentParser(description='Given a n-gram statistic files, generate sub-word sequence info')
+parser.add_argument('path', metavar='path_to_vector_file_and_vocab_file', type=str, help='filepath')
+parser.add_argument('--top', '-t', metavar='top_n', type=int, default=1, help='show top n results for the analogy test')
+args = parser.parse_args()
+print(args)
+
+glove_path = '../glove'
+
+filenames = [
+	'capital-common-countries.txt', 'capital-world.txt', 'currency.txt',
+	'city-in-state.txt', 'family.txt', 'gram1-adjective-to-adverb.txt',
+	'gram2-opposite.txt', 'gram3-comparative.txt', 'gram4-superlative.txt',
+	'gram5-present-participle.txt', 'gram6-nationality-adjective.txt',
+	'gram7-past-tense.txt', 'gram8-plural.txt', 'gram9-plural-verbs.txt',
+	]
+prefix = glove_path + '/eval/question-data/'
+
+words = []
+with open(join(args.path, 'vocab.txt'), 'r') as F:
+	for line in F:
+		words.append(line.strip().split()[0])
 vocab_size = len(words)
+print("vocab size", vocab_size)
 
-label_gram = {}
-gram_label = {}
-with open(args.label_gram, 'r') as F:
-	label_gram = json.load(F)
-# with open(args.gram_label, 'r') as F:
-# 	gram_label = json.load(F)
+ivocab = {}
+vocab = {}
+for idx, token in enumerate(words):
+	vocab[token] = idx
+	ivocab[idx] = token
 
-vocab = {label_gram[w]: idx for idx, w in enumerate(words)}
-ivocab = {idx: label_gram[w] for idx, w in enumerate(words)}
 
-with open(args.vectorfile, 'r') as f:
+with open(join(args.path, 'vectors.txt'), 'r') as f:
 	vectors = {}
 	for line in f:
 		vals = line.rstrip().split(' ')
-		if vals[0] == '<unk>':
+		try:
+			vectors[vals[0]] = [float(x) for x in vals[1:]]
+		except KeyError:
+			print "got unkown key: ", vals[0]
 			continue
-		vectors[label_gram[vals[0]]] = [float(x) for x in vals[1:]]
 
-## Vector is always indexed by number for us so no conversion here
 vector_dim = len(vectors[ivocab[0]])
 
+print("vector dimension", vector_dim)
+
 W = np.zeros((vocab_size, vector_dim))
-for word, v in vectors.items():
-	if word == '<unk>':
+for index, v in vectors.items():
+	if index == '<unk>':
 		continue
-	W[vocab[word], :] = v
+	W[vocab[index], :] = v
 
 W_norm = np.zeros(W.shape)
 d = (np.sum(W ** 2, 1) ** (0.5))
+zero_count = 0
+for index in xrange(d.shape[0]):
+	if d[index] == 0:
+		zero_count += 1
+		d[index] = 1
+print("In total {} zero vectors", zero_count)
+
 W_norm = (W.T / d).T
 
-evaluate_vectors(W_norm, vocab, ivocab)
+
+with open('analogy_results_top{}.txt'.format(args.top), 'w') as F:
+ 	print("evaluating vectors")
+ 	evaluation(predictor, vocab, ivocab, F)

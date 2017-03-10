@@ -1,0 +1,32 @@
+capital-common-countries.txt:
+ACCURACY TOP5: 28.26% (143/506)
+capital-world.txt:
+ACCURACY TOP5: 11.03% (499/4524)
+currency.txt:
+ACCURACY TOP5: 0.50% (4/808)
+city-in-state.txt:
+ACCURACY TOP5: 10.70% (264/2467)
+family.txt:
+ACCURACY TOP5: 39.72% (201/506)
+gram1-adjective-to-adverb.txt:
+ACCURACY TOP5: 5.44% (54/992)
+gram2-opposite.txt:
+ACCURACY TOP5: 4.56% (37/812)
+gram3-comparative.txt:
+ACCURACY TOP5: 30.78% (410/1332)
+gram4-superlative.txt:
+ACCURACY TOP5: 10.13% (107/1056)
+gram5-present-participle.txt:
+ACCURACY TOP5: 19.60% (207/1056)
+gram6-nationality-adjective.txt:
+ACCURACY TOP5: 27.39% (438/1599)
+gram7-past-tense.txt:
+ACCURACY TOP5: 17.18% (268/1560)
+gram8-plural.txt:
+ACCURACY TOP5: 34.38% (458/1332)
+gram9-plural-verbs.txt:
+ACCURACY TOP5: 22.53% (196/870)
+Questions seen/total: 99.37% (19420/19544)
+Semantic accuracy: 12.61%  (1111/8811)
+Syntactic accuracy: 20.50%  (2175/10609)
+Total accuracy: 16.92%  (3286/19420)
