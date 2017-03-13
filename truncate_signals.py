@@ -43,7 +43,7 @@ def filter_n_grams(grams):
 			n_grams.append((token, count))
 		else:
 			words.append((token, count))
-	return words, grams
+	return words, n_grams
 
 def dump_ref(f, arr, count, offset = 0):
 	for index in xrange(count):

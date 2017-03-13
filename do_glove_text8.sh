@@ -1,4 +1,3 @@
-python count_cooc_signals.py -o /datadrive/data/glove_text8/ /datadrive/data/text8
 
 export DATA_PATH=/datadrive/data
 export SIGNAL_FILE=.created_at.txt
