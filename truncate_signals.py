@@ -64,9 +64,9 @@ args = parser.parse_args()
 print args
 
 num_words = args.num_words
-num_grams = num_grams
-num_synsets = num_synsets
-num_tags = num_tags
+num_grams = args.num_grams
+num_synsets = args.num_synsets
+num_tags = args.num_tags
 
 f = open(args.inputfile, 'r')
 out_path = args.outputpath
