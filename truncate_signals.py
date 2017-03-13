@@ -1,9 +1,6 @@
 import sys
+import argparse
 
-num_words = 60000
-num_grams = 20000
-num_synsets = 20000
-num_tags = 100
 
 def read_file(f):
 	grams = []
@@ -51,8 +48,28 @@ def dump_ref(f, arr, count, offset = 0):
 		f.write('{},{}\n'.format(index + offset, token))
 
 
-f = open(sys.argv[1], 'r')
-out_path = sys.argv[2]
+
+
+parser = argparse.ArgumentParser(description='For given wikipedia featured cooc, reduce and shuffle them')
+parser.add_argument('inputfile', metavar='inputfile', type=str, help='fcount file to be processed')
+parser.add_argument('outputpath', metavar='outputpath', type=str, help='the path to output ref file')
+parser.add_argument('--num_words', metavar='num_words', type=int, default=60000)
+parser.add_argument('--num_grams', metavar='num_words', type=int, default=20000)
+parser.add_argument('--num_synsets', metavar='num_words', type=int, default=20000)
+parser.add_argument('--num_tags', metavar='num_words', type=int, default=100)
+
+
+# parser.add_argument('-s', '--seed', default=12345, help='random seed')
+args = parser.parse_args()
+print args
+
+num_words = args.num_words
+num_grams = num_grams
+num_synsets = num_synsets
+num_tags = num_tags
+
+f = open(args.inputfile, 'r')
+out_path = args.outputpath
 
 grams, synsets, tags = read_file(f)
 sample1, sample1_count = grams[0]

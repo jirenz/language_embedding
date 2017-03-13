@@ -90,10 +90,15 @@ def predictor(wd1, wd2, wd3):
 		dist[wd2[index]] = -np.Inf
 		dist[wd3[index]] = -np.Inf
 
+		# if args.first > 0:
+		# 	for rm_index in xrange(wd1.shape[0]):
+		# 		if rm_index >= args.first:
+		# 			dist[rm_index] = -np.Inf
+
 		# predicted word index
 		for i in xrange(args.top):
 			if i > 0:
-				dist[predictions[i - 1][index]] = -10000
+				dist[predictions[i - 1][index]] = -np.Inf
 			predictions[i][index] = np.argmax(dist)
 		# predictions[subset] = np.argmax(dist, 0).flatten()
 	return predictions
@@ -102,6 +107,7 @@ def predictor(wd1, wd2, wd3):
 parser = argparse.ArgumentParser(description='evaluate trained vectors')
 parser.add_argument('path', metavar='path_to_vector_file_and_vocab_file', type=str, help='filepath')
 parser.add_argument('--top', '-t', metavar='top_n', type=int, default=1, help='show top n results for the analogy test')
+parser.add_argument('--first', '-f', metavar='first_k', type=int, default=-1, help='use first k words in the vocab, -1 to use all')
 args = parser.parse_args()
 print(args)
 
@@ -120,6 +126,8 @@ words = []
 with open(join(args.path+'vocab.txt'), 'r') as F:
 	for line in F:
 		words.append(line.strip().split()[0])
+		if args.first > 0 and len(words) > args.first:
+			break;
 vocab_size = len(words)
 print("vocab size", vocab_size)
 
@@ -149,9 +157,12 @@ print("vector dimension", vector_dim)
 
 W = np.zeros((vocab_size, vector_dim))
 for index, v in vectors.items():
-	if index == '<unk>':
+	try:
+		W[vocab[index], :] = v
+	except:
+		print "unknown index", index
 		continue
-	W[vocab[index], :] = v
+
 
 W_norm = np.zeros(W.shape)
 d = (np.sum(W ** 2, 1) ** (0.5))
