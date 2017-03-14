@@ -46,7 +46,7 @@ def worker_task(files, args, worker_id):
 					process_features(text, featurizer, cooc, args.window_size)
 				except: 
 					break
-				print "read:{}/{}, {}%", read, 1E9, read/float(1E9)
+				print "read:{}/{}, {}%".format(read, 1E9, read/float(1E9) * 100)
 
 		#dump the gram info	
 		dump_cooc_to_file(worker_id, cooc, output_file)

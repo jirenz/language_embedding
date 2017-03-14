@@ -10,6 +10,7 @@ from nltk.wsd import lesk
 # import spacy                         # See "Installing spaCy"
 from pycorenlp import StanfordCoreNLP
 import random
+import numpy as np
 # we only need tagger and entity
 # def custom_pipeline(nlp):
     # return  # (nlp.tagger) #, nlp.entity)
@@ -248,6 +249,27 @@ class FeatureLabeler():
 			# 	f.write('ner_{} 1\n'.format(description))
 		f.close()
 
+	def load_embedding(self, filename, rand_range=0.1):
+		print "loading embeddings from file {}".format(filename)
+		vectors = {}
+		embed_size = 0
+		with open(filename) as f:
+			for line in f:
+				vals = line.rstrip().split(' ')
+				values = [float(x) for x in vals[1:]]
+				vectors[vals[0]] = values
+				embed_size = len(values)
+		embeddings = np.random.rand(self.maximum, embed_size) * rand_range
+		missing = []
+		for val in xrange(self.minimum, self.maximum):
+			description, fea_type = self.val_to_feature(val)
+			try:
+				embeddings[val] = vectors[description]
+			except KeyError:
+				missing.append(description)
+		print "missing {}/{} embeddings".format(len(missing), self.maximum - self.minimum)
+		return embeddings, embed_size
+
 class Featurizer():
 	def __init__(self, settings=None, labeler=None):
 		if settings is None:
@@ -437,11 +459,9 @@ class Featurizer():
 		# 	pos.append(token['pos'])
 				# lemma.append(token['lemma'])
 		# print "length of fragment", len(fragment)
-		
 
-# fragment = "your head look like a ball however hubert has a head \
-# which is a polygon this difference derives from the fact that hubert is gamma perturbation stable"
-# fragment = fragment.split(" ")
+
+
 
 
 # settings = Settings() # all_grams, ss_weight])

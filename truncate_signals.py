@@ -53,10 +53,10 @@ def dump_ref(f, arr, count, offset = 0):
 parser = argparse.ArgumentParser(description='For given wikipedia featured cooc, reduce and shuffle them')
 parser.add_argument('inputfile', metavar='inputfile', type=str, help='fcount file to be processed')
 parser.add_argument('outputpath', metavar='outputpath', type=str, help='the path to output ref file')
-parser.add_argument('--num_words', metavar='num_words', type=int, default=60000)
-parser.add_argument('--num_grams', metavar='num_words', type=int, default=20000)
-parser.add_argument('--num_synsets', metavar='num_words', type=int, default=20000)
-parser.add_argument('--num_tags', metavar='num_words', type=int, default=100)
+parser.add_argument('--num_words', metavar='num_words', type=int, default=80000)
+parser.add_argument('--num_grams', metavar='num_grams', type=int, default=40000)
+parser.add_argument('--num_synsets', metavar='num_synsets', type=int, default=40000)
+parser.add_argument('--num_tags', metavar='num_tags', type=int, default=100)
 
 
 # parser.add_argument('-s', '--seed', default=12345, help='random seed')
@@ -91,6 +91,7 @@ print "tags:", num_tags
 with open(out_path + 'n_gram_table.ref', 'w') as f_out:
 	dump_ref(f_out, words, num_words)
 	dump_ref(f_out, grams, num_grams, offset=num_words)
+	# dump_ref(f_out, grams, num_grams, offset=num_words)
 
 with open(out_path + 'synset_offset_table.ref', 'w') as f_out:
 	dump_ref(f_out, synsets, num_synsets)

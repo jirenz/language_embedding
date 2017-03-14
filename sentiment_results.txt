@@ -1,0 +1,12 @@
+accuracy on  test 990.0 2210.0 0.447963800905 
+trained on glove-6b-300d, untokenized
+
+accuracy on  test 924.0 2210.0 0.418099547511 
+trained and tested on glove-wiki-100d, untokenized
+
+accuracy on  test 933.0 2210.0 0.422171945701 
+on ngram-wiki-tokenized-100d
+(Original benchmark 47%) Yuetong
+
+accuracy on  test 888.0 2210.0 0.401809954751 
+this is ngram-randomWe-100d-on tokenized set
