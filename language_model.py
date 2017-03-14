@@ -11,8 +11,8 @@ class Config:
 	dim_embedding = 100
 	dim_H = 300 # embedding size
 	num_layers = 3
-	signal_size_in = 20
-	dim_pred = 2
+	signal_size_in = 30
+	dim_pred = 5
 	# signal_size_out = 20
 	# signal_size_neg = 20
 
@@ -101,7 +101,7 @@ class Model(object):
 		"""
 		self.collected_embeddings = tf.gather(self.embeddings, self.inputs, name="collected_embeddings")
 		self.normalized_masks = tf.divide(self.input_masks, tf.reduce_sum(self.input_masks), name="normalized_masks")
-		self.normalized_masks = tf.reshape(self.normalized_masks, [1, -1, 1], name="reshape_normalized_masks")
+		self.normalized_masks = tf.reshape(self.normalized_masks, [-1, self.config.signal_size_in, 1], name="reshape_normalized_masks")
 		self.masked_embeddings = tf.multiply(self.collected_embeddings, self.normalized_masks, name="masked_embeddings")
 		self.summed_embeddings = tf.reduce_sum(self.masked_embeddings, axis=1, name="sum_embeddings")
 		self.activations = [self.linear(self.summed_embeddings, self.Ws[0], self.Bs[0])]
@@ -113,6 +113,7 @@ class Model(object):
 		self.pred_W = tf.Variable(tf.random_normal([self.config.dim_H, self.config.dim_pred], stddev=0.1, dtype=tf.float32), name="pred_W")
 		self.pred_B = tf.Variable(tf.zeros([self.config.dim_pred], dtype=tf.float32), name="pred_B")
 		self.hat_y = self.linear(self.activation_out, self.pred_W, self.pred_B, name="hat_y")
+		self.pred = tf.nn.softmax(self.hat_y)
 
 	def add_loss_op(self):
 		"""Adds Ops for the loss function to the computational graph.

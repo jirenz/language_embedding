@@ -221,6 +221,14 @@ class FeatureLabeler():
 	# 	except KeyError:
 	# 		print "ner error"
 	# 		return -1
+	
+	def description_string(self, description, fea_type):
+		if fea_type == 'gram':
+			return description.replace(' ', '_')
+		if fea_type == 'ss':
+			return 'ss_{}'.format(description)
+		if fea_type == 'pos':
+			return 'pos_{}'.format(description)
 
 	def val_to_feature(self, val):
 		if val < self.minimum:
@@ -239,12 +247,8 @@ class FeatureLabeler():
 		f = open(path, 'w')
 		for val in xrange(self.minimum, self.maximum):
 			description, fea_type = self.val_to_feature(val)
-			if fea_type == 'gram':
-				f.write('{} 1\n'.format(description.replace(' ', '_')))
-			if fea_type == 'ss':
-				f.write('ss_{} 1\n'.format(description))
-			if fea_type == 'pos':
-				f.write('pos_{} 1\n'.format(description))
+			f.write('{} 1\n'.format(self.description_string(description, fea_type)))
+			
 			# if fea_type == 'ner':
 			# 	f.write('ner_{} 1\n'.format(description))
 		f.close()
@@ -263,8 +267,9 @@ class FeatureLabeler():
 		missing = []
 		for val in xrange(self.minimum, self.maximum):
 			description, fea_type = self.val_to_feature(val)
+			string_des = self.description_string(description, fea_type)
 			try:
-				embeddings[val] = vectors[description]
+				embeddings[val] = vectors[string_des]
 			except KeyError:
 				missing.append(description)
 		print "missing {}/{} embeddings".format(len(missing), self.maximum - self.minimum)

@@ -10,3 +10,6 @@ on ngram-wiki-tokenized-100d
 
 accuracy on  test 888.0 2210.0 0.401809954751 
 this is ngram-randomWe-100d-on tokenized set
+
+accuracy on  test 909.0 2210.0 0.411312217195 
+With training set repeatedly tokenized for 5 times
