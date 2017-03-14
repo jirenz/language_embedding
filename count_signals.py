@@ -53,7 +53,7 @@ def worker_task(files, args, worker_id):
 					labeler.increment_features(features)
 				except: 
 					break
-				print "read", read
+				print "read:{}/{}, {}%".format(read, 1E9, read / float(1E9) * 100)
 
 		#dump the gram info	
 		file_name, _ = splitext(basename(inputfile))

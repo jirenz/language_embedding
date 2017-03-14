@@ -46,7 +46,7 @@ def worker_task(files, args, worker_id):
 					process_features(text, featurizer, cooc, args.window_size)
 				except: 
 					break
-				print "read", read
+				print "read:{}/{}, {}%", read, 1E9, read/float(1E9)
 
 		#dump the gram info	
 		dump_cooc_to_file(worker_id, cooc, output_file)
@@ -63,7 +63,7 @@ if __name__ == "__main__":
 						help='files to be processed')
 	parser.add_argument('-o', '--outputpath', default='./', type=str, help='output path')
 	parser.add_argument('--cores', default=1, type=int, help='number of concurrent threads')
-	parser.add_argument('--window_size', default=6, type=int, help='window size for cooccurrence')
+	parser.add_argument('--window_size', default=15, type=int, help='window size for cooccurrence')
 	parser.add_argument('-a', '--alphabet', default='abcdefghijklmnopqrstuvwxyz ',
 		 type=str, help='supported alphabet')
 	# Macros and Constants

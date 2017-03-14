@@ -3,7 +3,7 @@ export DATA_PATH=/datadrive/data
 export SIGNAL_FILE=.created_at.txt
 
 ARTICLE_PATH=$DATA_PATH/text8
-OUTPUT_PATH=$DATA_PATH/glove_text8_suppress_gram
+OUTPUT_PATH=$DATA_PATH/glove_text8_debug
 COOC_FILE=$OUTPUT_PATH/text8.cooc
 COOCCURRENCE_SHUF_FILE=$OUTPUT_PATH/cooc.shuff.bin
 VOCAB_FILE=$OUTPUT_PATH/vocab.txt

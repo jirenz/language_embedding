@@ -67,7 +67,7 @@ class FeatureLabelerHungry():
 				else:
 					print "Unkonwn", fea, fea_type, "from val", val
 					raise KeyError
-	
+
 	def tag_val(self, tag):
 		try:
 			return self.tag_to_label[tag] + self.tag_offset
