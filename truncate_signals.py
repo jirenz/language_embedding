@@ -76,20 +76,21 @@ sample1, sample1_count = grams[0]
 sample2, sample2_count = grams[1]
 assert sample1_count > sample2_count
 
-words, grams = filter_n_grams(grams)
+# words, grams = filter_n_grams(grams)
 
-num_words = min(len(words), num_words)
+# num_words = min(len(words), num_words)
 num_grams = min(len(grams), num_grams)
 num_synsets = min(len(synsets), num_synsets)
 num_tags = min(len(tags), num_tags)
 
-print "words:", num_words
+# print "words:", num_words
 print "grams:", num_grams
 print "synsets:", num_synsets
 print "tags:", num_tags
 
 with open(out_path + 'n_gram_table.ref', 'w') as f_out:
-	dump_ref(f_out, words, num_words)
+	# dump_ref(f_out, words, num_words)
+	# dump_ref(f_out, grams, num_grams, offset=num_words)
 	dump_ref(f_out, grams, num_grams, offset=num_words)
 
 with open(out_path + 'synset_offset_table.ref', 'w') as f_out:
