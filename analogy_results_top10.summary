@@ -1,0 +1,38 @@
+Namespace(first=-1, path='data/glove_debug/', top=10)
+('vocab size', 71290)
+('vector dimension', 50)
+unknown index <unk>
+('In total {} zero vectors', 0)
+evaluating vectors
+capital-common-countries.txt:
+ACCURACY TOP10: 62.45% (316/506)
+capital-world.txt:
+ACCURACY TOP10: 26.60% (948/3564)
+currency.txt:
+ACCURACY TOP10: 2.85% (17/596)
+city-in-state.txt:
+ACCURACY TOP10: 44.98% (1048/2330)
+family.txt:
+ACCURACY TOP10: 51.67% (217/420)
+gram1-adjective-to-adverb.txt:
+ACCURACY TOP10: 10.48% (104/992)
+gram2-opposite.txt:
+ACCURACY TOP10: 6.35% (48/756)
+gram3-comparative.txt:
+ACCURACY TOP10: 50.38% (671/1332)
+gram4-superlative.txt:
+ACCURACY TOP10: 10.89% (108/992)
+gram5-present-participle.txt:
+ACCURACY TOP10: 19.32% (204/1056)
+gram6-nationality-adjective.txt:
+ACCURACY TOP10: 47.27% (719/1521)
+gram7-past-tense.txt:
+ACCURACY TOP10: 21.99% (343/1560)
+gram8-plural.txt:
+ACCURACY TOP10: 31.38% (418/1332)
+gram9-plural-verbs.txt:
+ACCURACY TOP10: 18.74% (163/870)
+Questions seen/total: 91.21% (17827/19544)
+Semantic accuracy: 34.33%  (2546/7416)
+Syntactic accuracy: 26.68%  (2778/10411)
+Total accuracy: 29.86%  (5324/17827)
