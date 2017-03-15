@@ -58,6 +58,8 @@ class Loader():
 		pbar = tqdm(total=len(data))
 		for label, sentence in data:
 			feature, mask = self.featurize_sentence(sentence, num_features)
+			if feature is None:
+				continue
 			labels.append(label)
 			features.append(feature)
 			masks.append(mask)
@@ -74,16 +76,20 @@ class Loader():
 		features = reduce(add, features)
 		shuffle(features)
 		feature_vec = np.zeros([num_features], dtype="int32")
-		mask_vec = np.zeros([num_features], dtype="int32")
+		mask_vec = np.zeros([num_features], dtype="float32")
 		count = 0
 		for feature in features:
-			if feature['t'] != 'pos' and count < num_features:
+			if count >= num_features:
+				return feature_vec, mask_vec
+			if feature['t'] != 'pos': 
 				if feature['val'] == -1:
 					continue
 				feature_vec[count] = feature['val']
 				mask_vec[count] = feature.get('w', 1.)
 				count += 1
 				# TODO: pos tags? random dropout?
+		if count == 0: # No feature found
+			return None, None
 		return feature_vec, mask_vec
 		# for feature in features:
 		# 	if feature['t'] != 'pos' && count < num_features:
@@ -94,24 +100,37 @@ def test(data, session):
 	print "testing"
 	labels, features, masks = data
 	length = labels.shape[0]
-	batch_size = 2
-	indexes = np.random.shuffle(np.arange(labels.shape[0]))
-	predictions = np.zeros(labels.shape)
-	predictions = np.argmax(model.predict_on_batch(session, (features, masks)), axis=1)
-	correct = np.sum(np.eq(predictions, labels))
+	predictions = model.predict_on_batch(session, (features, masks))
+	# print "predictions", predictions
+	predictions = np.argmax(predictions, axis=1)
+	# print predictions, labels
+	correct = np.sum(np.equal(predictions, labels))
 	print "correct: {}/{}, {}%".format(correct, length, 100 * correct / length)
 
-def train(data, session, epochs=5, batch_size=5):
+def train(data, session, batch_size=5):
 	labels, features, masks = data
+	# summed = np.sum(masks, axis=1)
+	# eq = np.equal(summed, 0)
+	# print "empty masks", np.sum(np.abs(eq))
+	# for index in xrange(eq.shape[0]):
+	# 	if eq[index] != 0:
+	# 		print index
+	# assert np.sum(np.abs(eq)) == 0
+	# print features, masks
 	indexes = np.arange(labels.shape[0])
-	np.random.shuffle(indexes)
+	# TODO: Add shuffling back
+	# np.random.shuffle(indexes)
 	loss = 0
+	# print "indexes: ", indexes
+	# print "labels: ", labels
 	for batch in tqdm(xrange(int(labels.shape[0] / batch_size))):
 		# print indexes[batch * batch_size: (batch + 1) * batch_size]
 		label = labels[indexes[batch * batch_size: (batch + 1) * batch_size]]
 		feature = features[indexes[batch * batch_size: (batch + 1) * batch_size]]
 		mask = masks[indexes[batch * batch_size: (batch + 1) * batch_size]]
 		loss += model.train_on_batch(session, (feature, mask), label)
+
+		# break
 	loss /= int(labels.shape[0] / batch_size)
 	print "loss:{}".format(loss)
 
@@ -136,8 +155,10 @@ if __name__ == "__main__":
 			exit(0)
 		
 		embeddings, embed_size = featurizer.labeler.load_embedding(args.embedding)
+		# embed_size = 100
 		config.dim_embedding = embed_size
 		loader.load()
+		# model.add_embeddings()
 		model.add_embeddings(embeddings)
 		model.build()
 	
@@ -145,7 +166,7 @@ if __name__ == "__main__":
 		# saver = tf.train.Saver()
 		with tf.Session() as session:
 			session.run(init)
-			epochs = 5
+			epochs = 100
 			for epoch in xrange(epochs):
 				print "epoch: {}".format(epoch)
 				train(loader.train, session)

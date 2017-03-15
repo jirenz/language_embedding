@@ -406,7 +406,6 @@ class Featurizer():
 	Each text contains a 
 	'''
 	def featurize(self, text):
-
 		output = self.nlp.annotate(text, properties={
 		  'annotators': 'tokenize, ssplit, pos', # , ', #, lemma', # ,ner,, ner',
 		  # 'annotators': 'tokenize,ssplit,pos,lemma,ner',

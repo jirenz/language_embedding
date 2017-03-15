@@ -1,6 +1,6 @@
 import logging
 import tensorflow as tf
-
+import numpy as np
 class Config:
 	"""Holds model hyperparams and data information.
 	The config class is used to store various hyperparameters and dataset
@@ -9,8 +9,8 @@ class Config:
 	"""
 	dim_V = 4 # vocabulary size
 	dim_embedding = 100
-	dim_H = 300 # embedding size
-	num_layers = 3
+	dim_H = 200 # embedding size
+	num_layers = 1
 	signal_size_in = 30
 	dim_pred = 5
 	# signal_size_out = 20
@@ -70,17 +70,17 @@ class Model(object):
 			feed_dict[self.labels] = labels_batch
 		return feed_dict
 
-	def add_embeddings(self,embeddings):
-		if embeddings is None:
-			self.embeddings = tf.Variable(tf.random_normal([self.config.dim_V, self.config.dim_embedding], stddev=0.1), name="embeddings")
+	def add_embeddings(self, input_embeddings=None):
+		if input_embeddings is None:
+			self.embeddings = tf.Variable(tf.random_normal([self.config.dim_V, self.config.dim_embedding], stddev=0.5), name="embeddings")
 		else:
-			self.embeddings = tf.Variable(embeddings, dtype=tf.float32, name="embeddings")
+			self.embeddings = tf.Variable(input_embeddings, dtype=tf.float32, name="embeddings")
 
 	def add_variables(self):
-		self.Ws = [tf.Variable(tf.random_normal([self.config.dim_embedding, self.config.dim_H], dtype=tf.float32, stddev=0.1), name="embedding_to_hidden")]
+		self.Ws = [tf.Variable(tf.random_normal([self.config.dim_embedding, self.config.dim_H], dtype=tf.float32, stddev=0.5), name="embedding_to_hidden")]
 		self.Bs = [tf.Variable(tf.zeros([self.config.dim_H], dtype=tf.float32), name="embedding_to_hidden_bias")]
 		for i in xrange(1, self.config.num_layers):
-			self.Ws.append(tf.Variable(tf.random_normal([self.config.dim_H, self.config.dim_H], stddev=0.1, dtype=tf.float32), name="hidden_{}".format(i)))
+			self.Ws.append(tf.Variable(tf.random_normal([self.config.dim_H, self.config.dim_H], stddev=0.5, dtype=tf.float32), name="hidden_{}".format(i)))
 			self.Bs.append(tf.Variable(tf.zeros(self.config.dim_H, dtype=tf.float32), name="hidden_{}_bias".format(i)))
 
 	def linear(self, a, b, c, name=None):
@@ -100,19 +100,22 @@ class Model(object):
 			pred: A tensor of shape (batch_size, n_classes)
 		"""
 		self.collected_embeddings = tf.gather(self.embeddings, self.inputs, name="collected_embeddings")
-		self.normalized_masks = tf.divide(self.input_masks, tf.reduce_sum(self.input_masks), name="normalized_masks")
+		self.normalized_masks = tf.divide(self.input_masks, tf.reduce_sum(self.input_masks, axis = 1, keep_dims=True), name="normalized_masks")
 		self.normalized_masks = tf.reshape(self.normalized_masks, [-1, self.config.signal_size_in, 1], name="reshape_normalized_masks")
 		self.masked_embeddings = tf.multiply(self.collected_embeddings, self.normalized_masks, name="masked_embeddings")
 		self.summed_embeddings = tf.reduce_sum(self.masked_embeddings, axis=1, name="sum_embeddings")
+		# self.summed_embeddings = tf.Print(self.summed_embeddings, [self.summed_embeddings], name="printing", message="summed_embeddings: ")
 		self.activations = [self.linear(self.summed_embeddings, self.Ws[0], self.Bs[0])]
 		for i in xrange(1, self.config.num_layers):
 			self.activations.append(self.non_linear(self.activations[i - 1], self.Ws[i], self.Bs[i]))
 		self.activation_out = self.activations[-1]
 
 	def add_prediction_op(self):
-		self.pred_W = tf.Variable(tf.random_normal([self.config.dim_H, self.config.dim_pred], stddev=0.1, dtype=tf.float32), name="pred_W")
+		self.pred_W = tf.Variable(tf.random_normal([self.config.dim_H, self.config.dim_pred], stddev=0.5, dtype=tf.float32), name="pred_W")
 		self.pred_B = tf.Variable(tf.zeros([self.config.dim_pred], dtype=tf.float32), name="pred_B")
 		self.hat_y = self.linear(self.activation_out, self.pred_W, self.pred_B, name="hat_y")
+		# self.hat_y = tf.matmul(self.activation_out, self.pred_W)
+		# self.hat_y = tf.Print(self.hat_y, [self.hat_y], name="printing_hat_y", message="hat_y: ")
 		self.pred = tf.nn.softmax(self.hat_y)
 
 	def add_loss_op(self):
@@ -124,6 +127,7 @@ class Model(object):
 			loss: A 0-d tensor (scalar) output
 		"""
 		self.loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.labels, logits=self.hat_y, name="softmax_ce_loss")
+		self.loss = tf.reduce_mean(self.loss)
 
 	def add_training_op(self):
 		"""Sets up the training Ops.
@@ -141,7 +145,7 @@ class Model(object):
 		Returns:
 			train_op: The Op for training.
 		"""
-		opt = tf.train.AdamOptimizer() # learning_rate=self.config.lr)
+		opt = tf.train.AdamOptimizer(learning_rate=1E-3) # learning_rate=self.config.lr)
 		self.train_op = opt.minimize(self.loss)
 
 	def train_on_batch(self, sess, inputs_batch, labels_batch):
@@ -155,7 +159,15 @@ class Model(object):
 			loss: loss over the batch (a scalar)
 		"""
 		feed = self.create_feed_dict(inputs_batch, labels_batch=labels_batch)
-		_, loss = sess.run([self.train_op, self.loss], feed_dict=feed)
+		_, loss, haty, prediction = sess.run([self.train_op, self.loss, self.hat_y, self.pred], feed_dict=feed)
+		# print "hat_y shape", haty.shape
+		# print haty
+		# print "prediction", prediction
+		# prediction = np.argmax(prediction, axis=1)
+		# print "prediction", prediction
+		# length = labels_batch.shape[0]
+		# correct = np.sum(np.equal(prediction, labels_batch))
+		# print "correct: {}/{}, {}%".format(correct, length, 100 * correct / length)
 		return loss
 
 	def predict_on_batch(self, sess, inputs_batch):
@@ -169,6 +181,10 @@ class Model(object):
 		"""
 		feed = self.create_feed_dict(inputs_batch)
 		predictions = sess.run(self.pred, feed_dict=feed)
+		# print "pred shape", predictions.shape
+		# print predictions
+		# print "activation out", a_out.shape
+		# print a_out
 		return predictions
 
 	"""
