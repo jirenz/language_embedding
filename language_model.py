@@ -9,7 +9,7 @@ class Config:
 	"""
 	dim_V = 4 # vocabulary size
 	dim_embedding = 100
-	dim_H = 200 # embedding size
+	dim_H = 300 # embedding size
 	num_layers = 1
 	signal_size_in = 30
 	dim_pred = 5
